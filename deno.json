@@ -1,0 +1,8 @@
+{
+  "tasks": {
+    "serve": "deno run --unstable-kv -A server/main.ts",
+    "update_index": "deno run -A utils/update_index.ts"
+  },
+  "imports": {
+  }
+}
