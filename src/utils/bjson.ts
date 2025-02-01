@@ -290,8 +290,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
                     lenlen3 = header & 0b1111, objLen = conv2int(await readBytes(lenlen3));
                 for(let i = 0; i < objLen; i++) {
                     const keyLen = (await readBytes())[0],
-                        key = new TextDecoder().decode(await readBytes(keyLen)),
-                        type = expectedBuffer[0] >> 4;
+                        key = new TextDecoder().decode(await readBytes(keyLen));
                     obj[key] = await decodeValue()
                 }
             return obj;

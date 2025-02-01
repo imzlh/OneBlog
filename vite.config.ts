@@ -6,5 +6,8 @@ export default defineConfig({
     plugins: [
         vue()
     ],
-    base: './'
+    base: './',
+    build: {
+        target: 'esnext'
+    }
 })

@@ -4,7 +4,6 @@
     import List from '../components/list.vue';
     import { useRoute } from 'vue-router';
     import { debounceComputed } from '../utils/vue';
-    import { color_by_char } from '../utils/color';
 
     const route = useRoute();
     const _prop = route.params,
