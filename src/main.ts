@@ -130,7 +130,7 @@ try{
             routeCfg.push({
                 path,
                 name: key,
-                redirect: from => ({ name: 'search', params: { [key]: from.params[key] } }),
+                redirect: from => ({ name: 'search', params: { keyword: " " } , query: { [key]: from.params[key] } }),
             });
         }else{
             console.warn(`Route ${key} not found!`);

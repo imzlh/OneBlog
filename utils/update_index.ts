@@ -15,9 +15,9 @@ const cannot_be_attached = ['.html', '.htm'];
 
 export function get_attachments(data: string): string[] {
     // 解析MarkDown链接
-    const matches = data.matchAll(/\[.*?\]\((.*?)\)/g),
+    const matches = data.matchAll(/\[.*?\]\(([^\d].*?)\)/g),
         //   [1]: https://hi.imzlh.top/usr/uploads/2024/07/1096801274.webp
-        matches2 = data.matchAll(/\s+\[\\d+\]\:\s*(.+)\s*/g);
+        matches2 = data.matchAll(/\s+\[\d+\]\:\s*(.+)\s*/g);
     return Array.from(matches, (match) => match[1].trim())
         .concat(Array.from(matches2, (match) => match[1].trim()))
         .filter((url) => cannot_be_attached.every((ext) =>!url.endsWith(ext)));
@@ -45,8 +45,8 @@ for(const file of Deno.readDirSync(path_posts)){
 
         // 提取内容
         const data: IPost = {
-            created: ctime!.getTime(),
-            modified: mtime!.getTime(),
+            created: BigInt((new Date(metaObj.created) || ctime)!.getTime()),
+            modified: BigInt((new Date(metaObj.modified) || mtime)!.getTime()),
             title: metaObj.title,
             order: metaObj.order ? parseInt(metaObj.order) : 0,
             attachment: metaObj.attachment ? metaObj.attachment.split(',') : get_attachments(content),

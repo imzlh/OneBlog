@@ -73,9 +73,9 @@ for (const post of stmt.iter()) {
     }
     const postMD = `title: ${title}
 name: ${slug}
-modified: ${modified * 1000}
+modified: ${new Date(modified * 1000).toUTCString()}
 category: ${categories[0].substring(2)}
-created: ${created * 1000}
+created: ${new Date(created * 1000).toUTCString()}
 tags: ${tags.map(tag => tag.substring(2)).join(",")}
 order: ${order}
 

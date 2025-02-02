@@ -39,25 +39,21 @@ export const Unknown = Symbol("Unknown");
  * @param obj 整数
  * @returns Buffer
  */
-function int2buf(value: number): Uint8Array {
-    value = Math.abs(value);
-    const bytes = new Uint8Array(0xf);
-    for(var i = 0; value > 0; i++){
-        if(i == 0xf) throw new Error("Value " + value + " exceeds the maximum safe integer for bJSON");
-        bytes[i] = (value >>= (i * 8));
-    }
-    return bytes.subarray(0, i -1);
-}
+export function int2buf(value: number | bigint): Uint8Array {
+    value = typeof value === "bigint" ? value : BigInt(Math.abs(value));
+    const bytes: number[] = [];
+    do {
+        bytes.push(Number(value & 0xffn));
+        value >>= 8n;
+    } while (value > 0n);
 
-/**
- * 动态大小BigInt编码
- * @param obj BigInt
- * @returns Buffer
- */
-function bigint2buf(num: bigint) {
-    const dats: Array<number> = [];
-    do dats.unshift(Number(num & 0xffn)); while ((num >>= 8n) > 0n);
-    return dats;
+    // 确保数组长度不超过 15 个字节
+    if (bytes.length > 0xf) {
+        throw new Error("Value " + value + " exceeds the maximum safe integer for bJSON");
+    }
+
+    // 将数组转换为 Uint8Array
+    return new Uint8Array(bytes.reverse());
 }
 
 /**
@@ -112,7 +108,7 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
             break;
 
         case "bigint":
-            const bigIntBuf = bigint2buf(obj);
+            const bigIntBuf = int2buf(obj);
             const bigIntLenBuf = int2buf(bigIntBuf.length);
             if(bigIntLenBuf.length > 0b1111) throw new Error("BigInt too long");
             await pipe.write(new Uint8Array([(DataType.BigInt << 4) + bigIntLenBuf.length]));
@@ -161,11 +157,13 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
  * @param buf 整数的字节数组
  * @returns 整数
  */
-function conv2int(buf: Uint8Array): number {
-    let num = 0;
+export function buf2int(buf: Uint8Array): number {
+    let num = 0n;
     for (let i = 0; i < buf.length; i++)
-        num += buf[i] << (i * 8);
-    return num;
+        num = (num << 8n) | BigInt(buf[i]);
+    if(num > BigInt(Number.MAX_SAFE_INTEGER))
+        throw new Error("Value exceeds the maximum safe integer for bJSON");
+    return Number(num);
 }
 
 Uint8Array.prototype.pad = function(len: number, pad: number = 0) {
@@ -250,7 +248,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
             return header & 0b1 ? undefined : null;
 
             case DataType.String:
-                const lenlen = header & 0b1111, len = conv2int(await readBytes(lenlen));
+                const lenlen = header & 0b1111, len = buf2int(await readBytes(lenlen));
             return new TextDecoder().decode(await readBytes(len));
 
             case DataType.Int:
@@ -271,7 +269,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
             case DataType.BigInt:
                 let num2 = 0n;
                 const nlen2 = header & 0b1111,
-                    nlen3 = conv2int(await readBytes(nlen2));
+                    nlen3 = buf2int(await readBytes(nlen2));
                 for (let i = 0; i < nlen3; i++) {
                     const byte = (await readBytes())[0];
                     num2 = (num2 << 8n) | BigInt(byte & 0xff);
@@ -279,7 +277,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
             return num2;
 
             case DataType.Array:
-                const lenlen2 = header & 0b1111, arrLen = conv2int(await readBytes(lenlen2));
+                const lenlen2 = header & 0b1111, arrLen = buf2int(await readBytes(lenlen2));
                 const arr = [];
                 for (let i = 0; i < arrLen; i++)
                     arr.push(await decodeValue());
@@ -287,7 +285,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
 
             case DataType.Object:
                 const obj: Record<string, any> = {},
-                    lenlen3 = header & 0b1111, objLen = conv2int(await readBytes(lenlen3));
+                    lenlen3 = header & 0b1111, objLen = buf2int(await readBytes(lenlen3));
                 for(let i = 0; i < objLen; i++) {
                     const keyLen = (await readBytes())[0],
                         key = new TextDecoder().decode(await readBytes(keyLen));
@@ -296,7 +294,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
             return obj;
 
             case DataType.Binary:
-                const binaryLen = conv2int(await readBytes(header & 0b1111));
+                const binaryLen = buf2int(await readBytes(header & 0b1111));
             return readBytes(binaryLen);
 
             case DataType.Unknown:
@@ -367,7 +365,7 @@ globalThis.encode = encode;
 // @ts-ignore
 globalThis.decode = decode;
 // @ts-ignore
-globalThis.toInt = conv2int;
+globalThis.toInt = buf2int;
 // @ts-ignore
 globalThis.toBuf = int2buf;
 // @ts-ignore

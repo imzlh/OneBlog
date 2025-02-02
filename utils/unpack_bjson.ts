@@ -14,4 +14,3 @@ const file = Deno.args[1] || index_file,
 
 const data = await decode(stream.readable);
 Deno.writeTextFileSync(output, JSON.stringify(data, null, 4));
-stream.close();

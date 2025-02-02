@@ -14,7 +14,7 @@ export function get_thumb(post: IPost){
 }
 // 遵循PHP写法
 export function generate_date(post: IPost){
-    const date = new Date(post.created),
+    const date = new Date(Number(post.created) * 1000),
         year = date.getFullYear(),
         month = date.getMonth() + 1,
         day = date.getDate(),
@@ -80,7 +80,7 @@ class PostList{
     }
 
     sort_by_time(reverse: boolean = false){
-        this.$posts.sort((a, b) => (reverse ? b.created - a.created : a.created - b.created));
+        this.$posts.sort((a, b) => Number(reverse ? b.created - a.created : a.created - b.created));
         return this;
     }
 
@@ -222,6 +222,9 @@ export const __init = async () => {
 
     // 启用代码高亮
     mdUse(markedShiki());
+
+    // 自定义：音频播放器
+    // mdUse(
 
     // @debug
     // @ts-ignore

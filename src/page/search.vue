@@ -1,16 +1,15 @@
 <script lang="ts" setup>
-    import { reactive } from 'vue';
+    import { reactive, watch } from 'vue';
     import { Post } from '../utils/post';
     import List from '../components/list.vue';
     import { useRoute } from 'vue-router';
     import { debounceComputed } from '../utils/vue';
 
     const route = useRoute();
-    const _prop = route.params,
-        filter = reactive({
-            tags: (_prop.tags || []) as string[],
-            category: _prop.category instanceof Array ? _prop.category[0] : _prop.category || '',
-            search: _prop.search instanceof Array ? _prop.search[0] : _prop.search || '',
+    const filter = reactive({
+            tags: [] as string[],
+            category: '',
+            search: ''
         }),
         result = debounceComputed(() => 
             Post.select_by_condition(filter.category, filter.tags, filter.search)
@@ -21,6 +20,15 @@
             tags: Post.get_all_tags(),
             category: Post.get_all_categories()
         };
+    
+    watch(() => [route.params, route.query], ([param, query]) => {
+        // @ts-ignore
+        param.keyword && (filter.search =  query.search instanceof Array ? param.search[0] : param.search);
+        // @ts-ignore
+        query.category && (filter.category = query.category instanceof Array ? query.category[0] : query.category);
+        // @ts-ignore
+        query.tag && (filter.tags = query.tag instanceof Array ? query.tag : query.tag.split(','));
+    }, { immediate: true });
 
     const ui = reactive({
         category: false

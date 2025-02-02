@@ -40,7 +40,7 @@
             width: 100%;
             height: 15rem;
             position: relative;
-            box-shadow: .05rem .1rem 0.5rem rgba(0, 0, 0, 0.0705882353);
+            box-shadow: .05rem .1rem 0.5rem rgba(0, 0, 0, 0.15);
             transition: box-shadow 0.3s;
             overflow: hidden;
             border-radius: .35rem;
@@ -51,11 +51,9 @@
             }
 
             > img{
-                position: absolute;
                 width: 100%;
-                top: 50%;
-                transform: translateY(-50%);
-                left: 0;
+                height: 100%;
+                object-fit: cover;
             }
         }
 
@@ -99,6 +97,7 @@
         > p{
             font-size: .9rem;
             color: #6e6565;
+            word-break: break-all;
         }
     }
 </style>

@@ -9,7 +9,7 @@
 <template>
     <div class="list">
         <RouterLink :to="{ name: 'post-by-id', params: { id: post.name } }" class="card" v-for="post in posts"
-            :key="post.created">
+            :key="post.created.toString()">
             <img :src="get_thumb(post)" :alt="post.title">
             <div class="more">
                 <h1>{{ post.title }}</h1>
@@ -45,8 +45,9 @@
                 width: 5rem;
                 height: 5rem;
                 flex-shrink: 0;
+                object-fit: cover;
             }
-
+    
             > .more{
                 flex-grow: 1;
                 padding-right: .5rem;

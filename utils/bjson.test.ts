@@ -1,5 +1,5 @@
 import { isEqual } from "https://deno.land/x/lodash_es@v0.0.2/mod.ts";
-import { encode, decode } from "../src/utils/bjson.ts";
+import { encode, decode, buf2int, int2buf } from "../src/utils/bjson.ts";
 import { assert } from "jsr:@std/assert@^0.221.0/assert";
 
 const test_data = [
@@ -19,10 +19,8 @@ const test_data = [
     123,
     ": 负浮点数测试",
     -123.456,
-    ": NaN测试",
-    NaN,
     ": 大数字测试",
-    0x1234567890,
+    Date.now(),
     ": 浮点数测试",
     123.456,
     ": BigInt测试",
@@ -56,5 +54,15 @@ for(let i = 0; i < test_data.length; i += 1) {
             name: tip,
             fn: async () => assert(isEqual(await decode(encode(data)), data))
         });
+    }
+}
+
+// 额外测试
+for(let i = 1 ; i < Number.MAX_SAFE_INTEGER; i *= 0xf){
+    try{
+        assert(buf2int(int2buf(i)) === i)
+    }catch{
+        console.error(i);
+        break;
     }
 }

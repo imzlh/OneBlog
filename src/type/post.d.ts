@@ -2,11 +2,11 @@ interface IPost {
     /**
      * 创建时间
      */
-    created: number;
+    created: bigint;
     /**
      * 修改时间
      */
-    modified: number;
+    modified: bigint;
     /**
      * 扩展名之前的文件名
      */
