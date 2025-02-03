@@ -7,10 +7,14 @@
  * @license MIT
  */
 import _JSON from '../package.json' with { type: 'json' };
-import { encode } from '../src/utils/bjson.ts';
-const { config } = _JSON;
+import { decode, encode } from '../src/utils/bjson.ts';
 
-const [ hostname, _port] = config.server.split(':'),
+Deno.chdir(import.meta.dirname!);
+
+const { config } = _JSON;
+const CONFIG = JSON.parse(Deno.readTextFileSync('../' + config.base + config.config));
+
+const [ , scheme, hostname, _port ] = config.server.match(/^(\w+):\/\/(.+)\:(\d+)?/)!,
     port = parseInt(_port),
     kvdb = await Deno.openKv('./oneblog.db');
     
@@ -29,6 +33,17 @@ const server = Deno.serve({
         status: 400
     });
     
+    if(req.method === 'OPTIONS'){
+        return new Response(null, {
+            status: 204,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization",
+                "Access-Control-Max-Age": "86400"
+            }
+        });
+    }
 
     if(req.method === 'GET'){
         const comments = await kvdb.get<Array<string>>(['by_post', id]);    // UUID
@@ -55,7 +70,7 @@ const server = Deno.serve({
         });
     }else if(req.method === 'POST'){
         const body = await req.json();
-        if(!body.name || !body.email || !body.site || !body.content)
+        if((CONFIG.comment_required as Array<string>).every(key => body[key] === undefined))
             return new Response('', {
                 status: 400
             }); // Bad Request

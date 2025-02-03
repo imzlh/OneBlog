@@ -1,8 +1,8 @@
 import { is_image } from "./define";
 import { CONFIG, get_file, show_error } from "../main";
-import { encode, decode } from "./bjson";
+import { decode } from "./bjson";
 import { config } from '../../package.json';
-import { parse, use as mdUse } from 'marked';
+import { parse, use as mdUse, Renderer } from 'marked';
 import markedAlert from 'marked-alert';
 import { baseUrl } from 'marked-base-url';
 import markedShiki from 'marked-shiki';
@@ -14,7 +14,7 @@ export function get_thumb(post: IPost){
 }
 // 遵循PHP写法
 export function generate_date(post: IPost){
-    const date = new Date(Number(post.created) * 1000),
+    const date = new Date(post.created),
         year = date.getFullYear(),
         month = date.getMonth() + 1,
         day = date.getDate(),
@@ -118,8 +118,19 @@ class PostList{
 
 export class Post{
     static get(name: string){
-        const res = cache.post.find(post => post.name = name);
+        const res = cache.post.find(post => post.name == name);
         return res ? new this(res) : null;
+    }
+
+    static select_by_date(year: number, month: number, day: number){
+        return new PostList(cache.post.filter(
+            post => {
+                const date = new Date(post.created);
+                return date.getFullYear() == year
+                    && date.getMonth() == month
+                    && date.getDay() == day
+            }
+        ));
     }
 
     static select_by_tag(tag: string){
@@ -170,14 +181,16 @@ export class Post{
 
         return parse(content, {
             gfm: true,
-            breaks: true
+            breaks: true,
+            renderer
         });
     }
 
     async get_comment(): Promise<Array<IComment>>{
         if(!CONFIG.comment) throw new Error('Comment is disabled');
-        const url = 'http://' + config.server + '/' + this.$post.created,
+        const url = config.server + '/' + this.$post.created,
             res = await fetch(url);
+        if(res.status == 204) return [];
         if(res.status != 200) throw new Error('Failed to fetch comment');
         return await decode(res.body!);
     }
@@ -190,7 +203,7 @@ export class Post{
         const url = config.server + '/' + (
             from ? `${from.uuid}?comment` : this.$post.created + '?post'
         ),
-            res = await fetch(url, { method: 'POST', body: encode(comment) });
+            res = await fetch(url, { method: 'POST', body: JSON.stringify(comment) });
         if(res.status != 200) throw new Error('Failed to post comment');
     }
 
@@ -200,11 +213,10 @@ export class Post{
 }
 
 // 初始化post
+let renderer: Renderer;
 export const __init = async () => {
     try{
-        const stream = (await fetch(get_file(config.index), {
-            cache: 'no-store'
-        })).body;
+        const stream = (await fetch(get_file(config.index))).body;
         if(!stream) throw new Error('Failed to fetch post index');
         cache.post = await decode(stream);
     }catch(e){
@@ -223,12 +235,7 @@ export const __init = async () => {
     // 启用代码高亮
     mdUse(markedShiki());
 
-    // 自定义：音频播放器
-    // mdUse(
-
-    // @debug
-    // @ts-ignore
-    globalThis.encode = encode;
-    // @ts-ignore
-    globalThis.decode = decode;
+    // 自定义
+    renderer = new Renderer();
+    renderer.html = html => html.raw;
 }

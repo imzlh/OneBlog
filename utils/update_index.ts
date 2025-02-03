@@ -45,14 +45,14 @@ for(const file of Deno.readDirSync(path_posts)){
 
         // 提取内容
         const data: IPost = {
-            created: BigInt((new Date(metaObj.created) || ctime)!.getTime()),
-            modified: BigInt((new Date(metaObj.modified) || mtime)!.getTime()),
+            created: (new Date(metaObj.created) || ctime)!.getTime(),
+            modified: (new Date(metaObj.modified) || mtime)!.getTime(),
             title: metaObj.title,
             order: metaObj.order ? parseInt(metaObj.order) : 0,
             attachment: metaObj.attachment ? metaObj.attachment.split(',') : get_attachments(content),
             tags: metaObj.tags ? metaObj.tags.split(/\s*\,\s*/) : [],
             category: metaObj.category,
-            outline: dom.body.innerText.trim().substring(0, CONFIG.post_outline),
+            outline: dom.body.innerText.replaceAll(/\s+/g, ' ').trim().substring(0, CONFIG.post_outline),
             name: file.name.replace(/\.md$/, '')
         }
         posts.push(data);

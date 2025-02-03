@@ -2,48 +2,67 @@
     import { useRoute, useRouter } from 'vue-router';
     import { CONFIG } from '../main';
     import { generate_date, Post } from '../utils/post';
-    import { computed, shallowRef, watch } from 'vue';
+    import { shallowRef, watch } from 'vue';
     import { color_by_char } from '../utils/color';
     import CommentCard, { type IRawComment } from '../components/comment-card.vue';
+    import { vJavaScript } from '../utils/vue';
 
     const route = useRoute(),
         router = useRouter(),
-        pid = computed(() => route.params.post || route.params.id);
+        $comments = shallowRef<Array<IComment>>([]),
+        $content = shallowRef('稍等片刻'),
+        $title = shallowRef(''),
+        $date = shallowRef(''),
+        $tags = shallowRef(['']);
 
-    watch(pid, function(pid){
-        if(typeof pid != 'string' || !Post.get(pid))
-        router.push({ name: '404' })
-    });
+    let post: Post | undefined;
 
-    // @ts-ignore
-    const post = computed(() => Post.get(pid.value)!),
-        comments = shallowRef<Array<IComment>>([]),
-        content = shallowRef('稍等片刻');
-    
-    watch(post, function(post){
-        post.get_comment().then(data => comments.value = data);
-        post.get_html().then(data => content.value = data);
+    watch(() => route.params, function(param){
+        if(!param) return;
+        let _p: Post;
+        if(typeof param.id == 'string' && Post.get(param.id))
+            _p = Post.get(param.id)!;
+        else if(
+            [typeof param.year, typeof param.month, typeof param.day].every(val => val == 'string')
+        ){
+            const list = Post.select_by_date(
+                parseInt(param.year as string),
+                parseInt(param.month as string),
+                parseInt(param.day as string)
+            );
+            if(!list.array.length) return router.push({ name: '404' });
+            if(typeof param.id == 'string')
+                _p = list.array.find(post => post.info.name == param.id) || list.array[0];
+            else
+                _p = list.array[0];
+        }else
+            return router.push({ name: '404' });
+        _p.get_comment().then(data => $comments.value = data);
+        _p.get_html().then(data => $content.value = data);
+        $title.value = _p.info.title;
+        $date.value = generate_date(_p.info);
+        $tags.value = _p.info.tags;
     }, { immediate: true });
 
-    const post_comment = (comment: IRawComment) => post.value.post_comment(comment)
+    const post_comment = (comment: IRawComment) => post!.post_comment(comment)
             .catch((e: Error) => alert(e.message))
-            .then(() => post.value.get_comment().then(data => comments.value = data));
+            .then(() => post!.get_comment().then(data => $comments.value = data));
 </script>
 
 <template>
     <div class="post-container">
-        <h1>{{ post.info.title }}</h1>
-        <p>Published on {{ generate_date(post.info) }}</p>
+        <h1>{{ $title }}</h1>
+        <p>Published on {{ $date }}</p>
 
         <div class="tags">
-            <div v-for="tag in post.info.tags" :key="tag"
+            <div v-for="tag in $tags" :key="tag"
                 :style="{ backgroundColor: color_by_char(tag) }"
             >{{ tag }}</div>
         </div>
         <hr>
 
         <!-- 文章内容 -->
-        <div class="content" v-html="content"></div>
+        <div class="content" v-html="$content" v-java-script></div>
 
         <!-- 评论区 -->
         <div v-if="CONFIG.comment">

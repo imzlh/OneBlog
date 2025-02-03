@@ -33,6 +33,6 @@
     "static_dir": "static/",
     "config": "config.json",
     "index": "index.bjson",
-    "server": "localhost:4560"
+    "server": "http://localhost:4560"
   }
 }

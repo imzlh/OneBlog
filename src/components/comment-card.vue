@@ -47,6 +47,7 @@ Type your comment here..." />
         box-shadow: 0 .1rem .4rem rgba(0,0,0,.1);
         padding: .35rem .75rem;
         position: relative;
+        margin-bottom: 2rem;
 
         > .user {
             display: flex;

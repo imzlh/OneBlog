@@ -11,8 +11,7 @@
  * BJson数据类型，占据4Bit
  */
 enum DataType {
-    False,      // false
-    True,       // true
+    Boolean,    // bool
 
     Null,       // null
 
@@ -23,7 +22,6 @@ enum DataType {
     Float,      // 浮点数
     BigInt,     // 大整数
     Infinity,   // 正无穷
-    NInfinity,  // 负无穷
 
     Array,      // 数组
     Object,     // 对象
@@ -70,7 +68,7 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
     
     switch (typeof obj) {
         case "boolean":
-            await pipe.write(new Uint8Array([(obj ? DataType.True : DataType.False) << 4]));
+            await pipe.write(new Uint8Array([(obj ? 1 : 0) + (DataType.Boolean << 4)]));
             break;
 
         case "undefined":
@@ -85,7 +83,7 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
             if (Number.isNaN(obj)) {
                 await pipe.write(new Uint8Array([DataType.Unknown << 4]));
             } else if (!Number.isFinite(obj)) {
-                await pipe.write(new Uint8Array([(obj < 0 ? DataType.NInfinity : DataType.Infinity) << 4]));
+                await pipe.write(new Uint8Array([(DataType.Infinity << 4) + (obj < 0 ? 0 : 1)]));
             } else if (Number.isInteger(obj)) {
                 const buf = int2buf(obj);
                 await pipe.write(new Uint8Array([((obj < 0 ? DataType.NInt : DataType.Int) << 4) + buf.length]));
@@ -103,7 +101,7 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
             const strEncoded = new TextEncoder().encode(obj);
             const strLenBuf = int2buf(strEncoded.length);
             await pipe.write(new Uint8Array([(DataType.String << 4) + strLenBuf.length]));
-            await pipe.write(new Uint8Array(strLenBuf));
+            await pipe.write(strLenBuf);
             await pipe.write(strEncoded);
             break;
 
@@ -112,8 +110,8 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
             const bigIntLenBuf = int2buf(bigIntBuf.length);
             if(bigIntLenBuf.length > 0b1111) throw new Error("BigInt too long");
             await pipe.write(new Uint8Array([(DataType.BigInt << 4) + bigIntLenBuf.length]));
-            await pipe.write(new Uint8Array(bigIntLenBuf));
-            await pipe.write(new Uint8Array(bigIntBuf));
+            await pipe.write(bigIntLenBuf);
+            await pipe.write(bigIntBuf);
             break;
 
         case "function":
@@ -134,11 +132,12 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
                 await pipe.write(new Uint8Array(len));
                 await pipe.write(new Uint8Array(obj));
             } else {
-                const keys = Object.keys(obj).filter(i => obj[i] !== undefined);
-                const keylen = int2buf(keys.length).length;
+                const keys = Object.keys(obj).filter(i => obj[i]),
+                    keyBuf = int2buf(keys.length);
+                const keylen = keyBuf.length;
                 if(keylen > 0b1111) throw new Error("Object has too many sub-elements");
                 await pipe.write(new Uint8Array([(DataType.Object << 4) + keylen]));
-                await pipe.write(new Uint8Array(int2buf(keys.length)));
+                await pipe.write(keyBuf);
 
                 for (const key of keys) {
                     const keyEncoded = new TextEncoder().encode(key);
@@ -157,13 +156,15 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
  * @param buf 整数的字节数组
  * @returns 整数
  */
-export function buf2int(buf: Uint8Array): number {
+export function buf2int(buf: Uint8Array, to_bigint: true): bigint;
+export function buf2int(buf: Uint8Array, to_bigint?: false | undefined): number;
+export function buf2int(buf: Uint8Array, to_bigint?: boolean): number | bigint {
     let num = 0n;
     for (let i = 0; i < buf.length; i++)
         num = (num << 8n) | BigInt(buf[i]);
     if(num > BigInt(Number.MAX_SAFE_INTEGER))
         throw new Error("Value exceeds the maximum safe integer for bJSON");
-    return Number(num);
+    return to_bigint ? num : Number(num);
 }
 
 Uint8Array.prototype.pad = function(len: number, pad: number = 0) {
@@ -238,11 +239,8 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
         const dataType = header >> 4;
 
         switch (dataType) {
-            case DataType.False:
-            return false;
-
-            case DataType.True:
-            return true;
+            case DataType.Boolean:
+            return !!(header & 0b1);
             
             case DataType.Null:
             return header & 0b1 ? undefined : null;
@@ -253,12 +251,9 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
 
             case DataType.Int:
             case DataType.NInt:
-                let num = 0;
-                const nlen = header & 0b1111;
-                for (let i = 0; i < nlen; i++) {
-                    const byte = (await readBytes())[0];
-                    num = (num << 8) | (byte & 0xff);
-                }
+                const nlen = header & 0b1111,
+                    res = await readBytes(nlen),
+                    num = buf2int(res);
             return dataType === DataType.NInt ? -num : num;
 
             case DataType.Float:
@@ -270,11 +265,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
                 let num2 = 0n;
                 const nlen2 = header & 0b1111,
                     nlen3 = buf2int(await readBytes(nlen2));
-                for (let i = 0; i < nlen3; i++) {
-                    const byte = (await readBytes())[0];
-                    num2 = (num2 << 8n) | BigInt(byte & 0xff);
-                }
-            return num2;
+            return buf2int(await readBytes(nlen3), true);
 
             case DataType.Array:
                 const lenlen2 = header & 0b1111, arrLen = buf2int(await readBytes(lenlen2));
@@ -301,10 +292,7 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
             return Unknown;
 
             case DataType.Infinity:
-            return Infinity;
-
-            case DataType.NInfinity:
-            return -Infinity;
+            return header & 0x1 ? Infinity : -Infinity;
 
             default:
                 throw new Error("Unknown data type " + dataType + " at offset " + index);
@@ -347,26 +335,12 @@ export const decode = async (stream: ReadableStream) => {
  * @returns Blob
  */
 export async function encode2Blob(data: any): Promise<Blob> {
-    const _pipe = encode(data),
-        { readable, writable } = new DecompressionStream('gzip');
-    _pipe.pipeTo(writable);
-    const pipe = readable.getReader();
+    const pipe = encode(data).getReader();
     const chunks: Uint8Array[] = [];
     let res = await pipe.read();
     while (!res.done) {
         chunks.push(res.value);
         res = await pipe.read();
     }
-    return new Blob(chunks, { type: 'application/bjson' });
+    return new Blob(chunks, { type: 'application/gzip+bjson' });
 }
-// @debug
-// @ts-ignore
-globalThis.encode = encode;
-// @ts-ignore
-globalThis.decode = decode;
-// @ts-ignore
-globalThis.toInt = buf2int;
-// @ts-ignore
-globalThis.toBuf = int2buf;
-// @ts-ignore
-globalThis.toBlob = encode2Blob;

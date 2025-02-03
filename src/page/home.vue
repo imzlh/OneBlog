@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-    import { computed, watch } from 'vue';
+    import { computed } from 'vue';
     import PostCard from '../components/post-card.vue';
     import { Post } from '../utils/post';
     import { CONFIG } from '../main';
     import { useRoute } from 'vue-router';
     import { range } from '../utils/number';
-import { scrollTo } from '../App.vue';
 
     const $route = useRoute(),
         $current_page = computed(() => {
@@ -36,8 +35,6 @@ import { scrollTo } from '../App.vue';
                     ... $current_page.value == total - 6 ? [ total ] : ['...', total]
                 ];
         });
-
-        watch($current_page, () => scrollTo(0))
 </script>
 
 <template>
