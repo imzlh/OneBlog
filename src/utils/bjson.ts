@@ -262,7 +262,6 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
             return view.getFloat64(0);
 
             case DataType.BigInt:
-                let num2 = 0n;
                 const nlen2 = header & 0b1111,
                     nlen3 = buf2int(await readBytes(nlen2));
             return buf2int(await readBytes(nlen3), true);
