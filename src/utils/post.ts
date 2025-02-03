@@ -126,9 +126,11 @@ export class Post{
         return new PostList(cache.post.filter(
             post => {
                 const date = new Date(post.created);
+                console.log(date.getFullYear(), date.getMonth(), date.getDate());
+                console.log(date.getFullYear() == year, date.getMonth() == month, date.getDate() == day)
                 return date.getFullYear() == year
                     && date.getMonth() == month
-                    && date.getDay() == day
+                    && date.getDate() == day
             }
         ));
     }
