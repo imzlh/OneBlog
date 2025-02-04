@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-    import { reactive, watch } from 'vue';
+    import { computed, reactive, watch } from 'vue';
     import { Post } from '../utils/post';
     import List from '../components/list.vue';
     import { useRoute } from 'vue-router';
-    import { debounceComputed } from '../utils/vue';
+    // import { debounceComputed } from '../utils/vue';
 
     const route = useRoute();
     const filter = reactive({
@@ -11,7 +11,7 @@
             category: '',
             search: ''
         }),
-        result = debounceComputed(() => 
+        result = computed(() => 
             Post.select_by_condition(filter.category, filter.tags, filter.search)
             .sort_by_time()
             .sort_by_order()
@@ -22,12 +22,9 @@
         };
     
     watch(() => [route.params, route.query], ([param, query]) => {
-        // @ts-ignore
-        param.keyword && (filter.search =  query.search instanceof Array ? param.search[0] : param.search);
-        // @ts-ignore
-        query.category && (filter.category = query.category instanceof Array ? query.category[0] : query.category);
-        // @ts-ignore
-        query.tag && (filter.tags = query.tag instanceof Array ? query.tag : query.tag.split(','));
+        filter.search = (param.search instanceof Array ? param.search[0]?.trim() : param.search?.trim()) || '';
+        filter.category = (query.category instanceof Array ? query.category[0] : query.category) || '';
+        filter.tags = (query.tag instanceof Array ? query.tag.filter(Boolean) as string[] : query.tag?.split(',')) || [];
     }, { immediate: true });
 
     const ui = reactive({

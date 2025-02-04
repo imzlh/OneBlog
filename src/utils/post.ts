@@ -5,7 +5,53 @@ import { config } from '../../package.json';
 import { parse, use as mdUse, Renderer } from 'marked';
 import markedAlert from 'marked-alert';
 import { baseUrl } from 'marked-base-url';
-import markedShiki from 'marked-shiki';
+import { markedHighlight } from "marked-highlight";
+
+// highlight.js
+import hljs from 'highlight.js';
+import lang_javascript from 'highlight.js/lib/languages/javascript';
+import lang_json from 'highlight.js/lib/languages/json';
+import lang_xml from 'highlight.js/lib/languages/xml';
+import lang_html from 'highlight.js/lib/languages/xml';
+import lang_css from 'highlight.js/lib/languages/css';
+import lang_typescript from 'highlight.js/lib/languages/typescript';
+import lang_bash from 'highlight.js/lib/languages/bash';
+import lang_yaml from 'highlight.js/lib/languages/yaml';
+import lang_markdown from 'highlight.js/lib/languages/markdown';
+import lang_php from 'highlight.js/lib/languages/php';
+import lang_python from 'highlight.js/lib/languages/python';
+import lang_java from 'highlight.js/lib/languages/java';
+import lang_ruby from 'highlight.js/lib/languages/ruby';
+import lang_rust from 'highlight.js/lib/languages/rust';
+import lang_csharp from 'highlight.js/lib/languages/csharp';
+import lang_swift from 'highlight.js/lib/languages/swift';
+import lang_kotlin from 'highlight.js/lib/languages/kotlin';
+import lang_perl from 'highlight.js/lib/languages/perl';
+import lang_lua from 'highlight.js/lib/languages/lua';
+import lang_sql from 'highlight.js/lib/languages/sql';
+import lang_go from 'highlight.js/lib/languages/go';
+
+hljs.registerLanguage('javascript', lang_javascript);
+hljs.registerLanguage('json', lang_json);
+hljs.registerLanguage('xml', lang_xml);
+hljs.registerLanguage('html', lang_html);
+hljs.registerLanguage('css', lang_css);
+hljs.registerLanguage('typescript', lang_typescript);
+hljs.registerLanguage('bash', lang_bash);
+hljs.registerLanguage('yaml', lang_yaml);
+hljs.registerLanguage('markdown', lang_markdown);
+hljs.registerLanguage('php', lang_php);
+hljs.registerLanguage('python', lang_python);
+hljs.registerLanguage('java', lang_java);
+hljs.registerLanguage('ruby', lang_ruby);
+hljs.registerLanguage('rust', lang_rust);
+hljs.registerLanguage('csharp', lang_csharp);
+hljs.registerLanguage('swift', lang_swift);
+hljs.registerLanguage('kotlin', lang_kotlin);
+hljs.registerLanguage('perl', lang_perl);
+hljs.registerLanguage('lua', lang_lua);
+hljs.registerLanguage('sql', lang_sql);
+hljs.registerLanguage('go', lang_go);
 
 export function get_thumb(post: IPost){
     if(post.attachment.length > 0)
@@ -126,10 +172,8 @@ export class Post{
         return new PostList(cache.post.filter(
             post => {
                 const date = new Date(post.created);
-                console.log(date.getFullYear(), date.getMonth(), date.getDate());
-                console.log(date.getFullYear() == year, date.getMonth() == month, date.getDate() == day)
                 return date.getFullYear() == year
-                    && date.getMonth() == month
+                    && date.getMonth() +1 == month
                     && date.getDate() == day
             }
         ));
@@ -147,7 +191,7 @@ export class Post{
         return new PostList(cache.post.filter(post => {
             if(category && post.category !== category) return false;
             if(tag.length > 0 && !tag.every(t => post.tags.includes(t))) return false;
-            if(keyword && !post.title.includes(keyword) && !post.outline.includes(keyword)) return false;
+            if(keyword && !post.title.includes(keyword) && !post.outline?.includes(keyword)) return false;
             return true;
         }));
     }
@@ -235,9 +279,22 @@ export const __init = async () => {
     mdUse(baseUrl(get_file("").href));
 
     // 启用代码高亮
-    mdUse(markedShiki());
+    mdUse(markedHighlight({
+        emptyLangClass: 'hljs',
+        langPrefix: 'hljs language-',
+        highlight(code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        }
+    }));
 
     // 自定义
     renderer = new Renderer();
     renderer.html = html => html.raw;
 }
+
+export const parseMd = (content: string) => parse(content, {
+    gfm: true,
+    breaks: true,
+    renderer
+});

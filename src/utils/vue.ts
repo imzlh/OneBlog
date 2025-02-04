@@ -20,14 +20,14 @@ export function debounceComputed<T>(func: () => T, wait = 1000): ComputedRef<T> 
     });
 }
 
-export const vRender: Directive<HTMLElement, Post> = {
-    async mounted(el, binding){
+export const vRender: Directive<HTMLElement, string> = {
+    mounted(el, binding){
         el.shadowRoot || el.attachShadow({ mode: 'open' });
-        el.shadowRoot!.innerHTML = await binding.value.get_html();
+        el.shadowRoot!.innerHTML = binding.value;
     },
 
-    async updated(el, binding){
-        el.shadowRoot!.innerHTML = await binding.value.get_html();
+    updated(el, binding){
+        el.shadowRoot!.innerHTML = binding.value;
     }
 }
 

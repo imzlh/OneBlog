@@ -38,5 +38,5 @@ interface IPost {
     /**
      * 摘录
      */
-    outline: string;
+    outline?: string;
 }

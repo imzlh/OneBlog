@@ -128,6 +128,22 @@
                 font-weight: 600;
                 line-height: 1.2;
             }
+            h1, h2 {
+                margin: .75em 0;
+                padding: 0 0 .35em 0.5em;
+                position: relative;
+
+                &::before {
+                    content: '';
+                    position: absolute;
+                    left: -.5em;
+                    top: -.15em;
+                    height: 1.5em;
+                    width: .35em;
+                    border-radius: .35em;
+                    background: linear-gradient(to bottom right, #b80f9f, #d8b116);
+                }
+            }
             p {
                 margin: 1rem 0;
             }
@@ -188,6 +204,25 @@
                 th, td {
                     padding: 0.5rem;
                     border: 1px solid #ccc;
+                }
+            }
+            ul, ol {
+                margin: 1rem 0;
+                padding-left: 1.5rem;
+                list-style: disc;
+            }
+            button{
+                background-color: #11b85c;
+                color: #fff;
+                border: none;
+                border-radius: 0.2rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+
+                &:hover{
+                    background-color: #30b0be;
                 }
             }
         }

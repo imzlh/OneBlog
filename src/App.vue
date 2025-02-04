@@ -38,8 +38,8 @@
             >{{ CONFIG.title }}</RouterLink>
             <nav>
                 <router-link to="/">首页</router-link>
-                <router-link to="/search/">搜索</router-link>
-                <router-link to="/page/">页面</router-link>
+                <router-link :to="{ name: 'search', params: { keyword: ' ' } }">搜索</router-link>
+                <router-link :to="{ name: 'page', params: { path: 'index' } }">页面</router-link>
             </nav>
         </div>
     </div>

@@ -84,7 +84,7 @@ const main_config = {
         tag: '/tag/:tag',
         category: '/category/:category',
         search: '/search/:keyword',
-        page: '/p/:page(.*)'
+        page: '/:path(.*)'
     }
 };
 export { main_config as CONFIG };
@@ -137,16 +137,18 @@ try{
         }
     }
 
-    routeCfg.push({
-        path: '/:pathMatch(.*)*',
-        name: '404',
-        component: EPage,
-        props: {
-            code: 404,
-            reason: '页面不存在',
-            handle: () => history.back() // 点击返回
-        }
-    }, {
+    routeCfg.push(
+    //     {
+    //     path: '/:pathMatch(.*)*',
+    //     name: '404',
+    //     component: EPage,
+    //     props: {
+    //         code: 404,
+    //         reason: '页面不存在',
+    //         handle: () => history.back() // 点击返回
+    //     }
+    // }, 
+    {
         path: '/error/:code(\\d+)',
         name: 'error',
         component: EPage,
