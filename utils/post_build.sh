@@ -4,6 +4,7 @@ cp ./package.json ./dist/package.json
 mkdir ./dist/data/
 cat <<EOF >./dist/data/config.json
 {
+    "\$schema": "https://raw.githubusercontent.com/imzlh/OneBlog/refs/heads/master/src/type/config-schema.json",
     "title": "Blog",
     "description": "一个简单的博客",
     "keywords": "blog, 博客",
@@ -26,7 +27,9 @@ cat <<EOF >./dist/data/config.json
         "type": "text"
     },
     "social_link": {},
-    "default_thumb": "https://t.mwm.moe/pc",
+    "default_thumb": {
+        "url": "https://t.mwm.moe/pc"
+    },
     "loading_background": "gray",
     "route": {
         "home": "/",

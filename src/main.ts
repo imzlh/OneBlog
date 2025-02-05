@@ -46,40 +46,137 @@ export const show_error = (code: number, reason: string, handle?: () => any) =>{
 
 // 读取主配置
 const main_config = {
+    /**
+     * 站点名称
+     */
     title: 'izBlog',
+    /**
+     * 站点描述
+     */
     description: '一个简单的博客',
+    /**
+     * 站点关键词
+     * 多个关键词用英文逗号(,)分隔
+     */
     keywords: 'izBlog, blog, 博客',
 
-    // 遵循 https://www.php.net/manual/zh/function.date.php
+    /**
+     * 文章时间格式化方式
+     * 遵循 https://www.php.net/manual/zh/function.date.php
+     */
     format_time: 'Y-m-d H:i',
 
+    /**
+     * 允许显示和发表评论
+     * （使用前确保启动了服务器且package.json中配置了server）
+     */
     comment: true,
+    /**
+     * 评论每页显示数量
+     */
     comment_per_page: 10,
+    /**
+     * 评论必填字段
+     * 数组，支持name,email,content,website
+     */
     comment_required: ['name', 'email', 'content'],
+    /**
+     * 评论排序方式
+     * asc: 升序，desc: 降序
+     */
     comment_order: 'desc',
 
-    // DOMPurify配置 Config interface
+    /**
+     * XSS配置
+     * 请自行参考 DOMPurify 的配置项
+     */
     xss_config: {
         ALLOW_UNKNOWN_PROTOCOLS: true
     },
 
+    /**
+     * 文章分页数量
+     */
     post_per_page: 15,
-    default_thumb: 'thumb.webp',
+    /**
+     * 图片加载时默认的背景
+     * 可以为图片： `url('example.jpg')`
+     * 也可以为颜色： `#fff`
+     */
     loading_background: 'gray',
+    /**
+     * 默认缩略图配置
+     * 允许为连续数字序列(seqnum)，如001.jpg, 002.jpg, 003.jpg...
+     * 此时需要`range` `pad` `url`属性
+     * 也可以手动指定，`{ type: 'fixed', url: [] }`
+     * 此时会直接从数组里挑选一张图片作为缩略图
+     * 只有一张时直接指定`url`属性即可
+     */
+    default_thumb: {
+        type: 'seqnum',
+        range: [0, 50],
+        pad: 3,
+        url: 'thumb/%u.webp' as string | string[]
+    },
 
-    icp: '萌ICP备20249588号',
+    /**
+     * ICP备案号
+     */
+    icp: '',
+    /**
+     * 友情链接，对应 { name: url }
+     */
     friend_link: {} as Record<string, string>,
+    /**
+     * 心灵鸡汤的API(每次刷新都会显示新的一条)
+     * 支持xml、json、text格式
+     */
     api_soup: {
+        /**
+         * API地址
+         */
         url: 'https://api.oick.cn/dutang/api.php',
+        /**
+         * API返回数据类型
+         * `text`: 纯文本
+         * `json`: JSON格式
+         * `xml`: XML格式
+         */
         type: 'text' as 'text' | 'json' | 'xml',
+        /**
+         * 如果返回JSON，需要指定键名为数据
+         */
         key: '',    // JSON?
+        /**
+         * 如果返回XML，需要指定标签选择器
+         * 选择器的语法与 CSS选择器 或者说jQuery选择器 相同
+         */
         selector: ''    // XML?
     },
+    /**
+     * 社交链接，对应 { name: url }
+     */
     social_link: {} as Record<string, string>,
 
+    /**
+     * 统计JS代码，每次刷新都会执行
+     * 允许使用runScript方法，如`runScript('统计代码URL')`
+     */
+    statistic: '',
+    /**
+     * 额外添加的HTML代码，会在文章后面
+     * 注意：<script>标签由于浏览器限制不会运行，请使用`statistic`指定
+     */
+    footer_html: '',
+
+    /**
+     * 配置vue-router的路由规则
+     * 请参考 https://router.vuejs.org/zh/guide/essentials/dynamic-matching.html#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%99%E5%92%8C%E5%85%A8%E5%8F%B0%E8%B7%AF%E7%94%B1
+     * 注意： 目前只有post、tag、category、search、page这五个路由是动态的，还有一个别名路由"post-by-id"
+     */
     route: {
         home: '/',
-        post: '/:year(\d{4})/:month(\d{2})/:day(\d{2}\.html)',
+        post: '/:year(\d{4})/:month(\d{2})/:day(\d{2})',
         "post-by-id": '/p/:id',
         tag: '/tag/:tag',
         category: '/category/:category',
@@ -137,18 +234,7 @@ try{
         }
     }
 
-    routeCfg.push(
-    //     {
-    //     path: '/:pathMatch(.*)*',
-    //     name: '404',
-    //     component: EPage,
-    //     props: {
-    //         code: 404,
-    //         reason: '页面不存在',
-    //         handle: () => history.back() // 点击返回
-    //     }
-    // }, 
-    {
+    routeCfg.push({
         path: '/error/:code(\\d+)',
         name: 'error',
         component: EPage,

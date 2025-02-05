@@ -30,13 +30,13 @@
                 parseInt(param.month as string),
                 parseInt(param.day as string)
             );
-            if(!list.array.length) return router.push({ name: '404' });
+            if(!list.array.length) return router.push({ name: 'error', params: { code: 404 }, query: { message: '找不到页面' } });
             if(typeof param.id == 'string')
                 _p = list.array.find(post => post.info.name == param.id) || list.array[0];
             else
                 _p = list.array[0];
         }else
-            return router.push({ name: '404' });
+            return router.push({ name: 'error', params: { code: 404 }, query: { message: '找不到页面' } });
         _p.get_comment().then(data => $comments.value = data);
         _p.get_html().then(data => $content.value = data);
         $title.value = _p.info.title;
@@ -63,6 +63,7 @@
 
         <!-- 文章内容 -->
         <div class="content" v-html="$content" v-java-script></div>
+        <div class="footer" v-html="CONFIG.footer_html"></div>
 
         <!-- 评论区 -->
         <div v-if="CONFIG.comment">
@@ -173,7 +174,9 @@
                 background-color: #f5f5f5;
                 border-radius: 0.2rem;
                 font-size: 0.9rem;
-                color: #666;
+                font-family: Consolas, 'Courier New', monospace;
+                line-height: 1.5;
+                color: #3759c0;
             }
             a {
                 color: #595454;
@@ -224,6 +227,10 @@
                 &:hover{
                     background-color: #30b0be;
                 }
+            }
+            hr {
+                width: 50%;
+                margin: 5rem auto;
             }
         }
     }

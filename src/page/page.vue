@@ -14,7 +14,7 @@
         const url = get_file(config.page_dir + val + '.html');
         // 尝试获取
         const fe = await fetch(url);
-        if(!fe.ok) return useRouter().push({ name: '404' });
+        if(!fe.ok) return useRouter().push({ name: 'error', params: { code: 404 }, query: { message: '找不到页面' } });
         // markdown?
         const content = await fe.text();
         if(content.match(/^(?:\<script.*\><\/script\>\s*)?\<\!--\s*markdown\s*--\>/i))

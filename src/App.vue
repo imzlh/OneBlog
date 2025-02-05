@@ -4,6 +4,15 @@
     import Footer from './components/footer.vue';
     import { useRouter } from 'vue-router';
 
+    // 定义runScript函数，用于执行统计代码
+    // @ts-ignore
+    globalThis.runScript = (url: string) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = true;
+        document.head.appendChild(script);
+    };
+
     const hide_main = ref(false);
     onMounted(() => {
         let lastScrollTop = main.value!.scrollTop;
@@ -16,7 +25,11 @@
             }
             lastScrollTop = main.value!.scrollTop;
         };
-        useRouter().afterEach(() => main.value!.scrollTo({ top: 0, behavior:'smooth' }));
+        const statistic = new Function(CONFIG.statistic);
+        useRouter().afterEach(() => {
+            main.value!.scrollTo({ top: 0, behavior:'smooth' });
+            statistic();
+        });
     });
 </script>
 

@@ -1,0 +1,268 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Main Config Schema",
+    "$comment": "Definition of data/config.json",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "description": "站点名称"
+        },
+        "description": {
+            "type": "string",
+            "description": "站点描述"
+        },
+        "keywords": {
+            "type": "string",
+            "description": "站点关键词，多个关键词用英文逗号(,)分隔"
+        },
+        "format_time": {
+            "type": "string",
+            "description": "文章时间格式化方式，遵循 https://www.php.net/manual/zh/function.date.php"
+        },
+        "comment": {
+            "type": "boolean",
+            "description": "允许显示和发表评论，（使用前确保启动了服务器且package.json中配置了server）"
+        },
+        "comment_per_page": {
+            "type": "integer",
+            "description": "评论每页显示数量"
+        },
+        "comment_required": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "name",
+                    "email",
+                    "content",
+                    "website"
+                ]
+            },
+            "description": "评论必填字段，数组，支持name,email,content,website"
+        },
+        "comment_order": {
+            "type": "string",
+            "enum": [
+                "asc",
+                "desc"
+            ],
+            "description": "评论排序方式，asc: 升序，desc: 降序"
+        },
+        "xss_config": {
+            "type": "object",
+            "properties": {
+                "ALLOW_UNKNOWN_PROTOCOLS": {
+                    "type": "boolean",
+                    "description": "是否允许未知协议"
+                }
+            },
+            "additionalProperties": false,
+            "description": "XSS配置，参考 DOMPurify 的配置项"
+        },
+        "post_per_page": {
+            "type": "integer",
+            "description": "文章分页数量"
+        },
+        "loading_background": {
+            "type": "string",
+            "description": "图片加载时默认的背景，可以为图片url或颜色"
+        },
+        "default_thumb": {
+            "type": "object",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "seqnum",
+                            "description": "类型为连续数字序列"
+                        },
+                        "range": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "description": "序列范围，例如[0, 50]"
+                        },
+                        "pad": {
+                            "type": "integer",
+                            "description": "序列填充长度，例如3"
+                        },
+                        "url": {
+                            "type": "string",
+                            "description": "URL模板，例如'thumb/%u.webp'"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "range",
+                        "pad",
+                        "url"
+                    ],
+                    "additionalProperties": false,
+                    "description": "默认缩略图配置，类型为seqnum时需要range、pad和url属性"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "fixed",
+                            "description": "类型为手动指定"
+                        },
+                        "url": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "URL数组，例如['thumb/001.webp', 'thumb/002.webp']"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "url"
+                    ],
+                    "additionalProperties": false,
+                    "description": "默认缩略图配置，类型为fixed时需要url数组属性"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "单个URL，例如'thumb/001.webp'"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ],
+                    "additionalProperties": false,
+                    "description": "默认缩略图配置，只有一个URL时直接指定url属性"
+                }
+            ],
+            "description": "默认缩略图配置，可以为连续数字序列或手动指定"
+        },
+        "icp": {
+            "type": "string",
+            "description": "ICP备案号"
+        },
+        "friend_link": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-zA-Z0-9-_]+$": {
+                    "type": "string",
+                    "description": "友链名称对应的URL"
+                }
+            },
+            "additionalProperties": false,
+            "description": "友情链接，对应 { name: url }"
+        },
+        "api_soup": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "API地址"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "json",
+                        "xml"
+                    ],
+                    "description": "API返回数据类型，支持text、json、xml格式"
+                },
+                "key": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "如果返回JSON，需要指定键名为数据"
+                },
+                "selector": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "如果返回XML，需要指定标签选择器，选择器的语法与 CSS选择器 或者说jQuery选择器 相同"
+                }
+            },
+            "required": [
+                "url",
+                "type"
+            ],
+            "additionalProperties": false,
+            "description": "心灵鸡汤的API配置，每次刷新都会显示新的一条"
+        },
+        "social_link": {
+            "type": "object",
+            "patternProperties": {
+                "^[a-zA-Z0-9-_]+$": {
+                    "type": "string",
+                    "description": "社交链接名称对应的URL"
+                }
+            },
+            "additionalProperties": false,
+            "description": "社交链接，对应 { name: url }"
+        },
+        "statistic": {
+            "type": "string",
+            "description": "统计JS代码，每次刷新都会执行，允许使用runScript方法，如`runScript('统计代码URL')`"
+        },
+        "footer_html": {
+            "type": "string",
+            "description": "额外添加的HTML代码，会在文章后面，注意：<script>标签由于浏览器限制不会运行，请使用`statistic`指定"
+        },
+        "route": {
+            "type": "object",
+            "properties": {
+                "home": {
+                    "type": "string",
+                    "description": "首页路由"
+                },
+                "post": {
+                    "type": "string",
+                    "description": "文章路由，例如('/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})')"
+                },
+                "post-by-id": {
+                    "type": "string",
+                    "description": "通过ID匹配的文章路由，例如('/p/:id')"
+                },
+                "tag": {
+                    "type": "string",
+                    "description": "标签路由，例如('/tag/:tag')"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "分类路由，例如('/category/:category')"
+                },
+                "search": {
+                    "type": "string",
+                    "description": "搜索路由，例如('/search/:keyword')"
+                },
+                "page": {
+                    "type": "string",
+                    "description": "页面路由，例如('/:path(.*)')"
+                }
+            },
+            "required": [
+                "home",
+                "post",
+                "post-by-id",
+                "tag",
+                "category",
+                "search",
+                "page"
+            ],
+            "additionalProperties": false,
+            "description": "配置vue-router的路由规则，注意：目前只有post、tag、category、search、page这五个路由是动态的，还有一个别名路由'post-by-id'"
+        }
+    },
+    "additionalProperties": false,
+    "description": "博客的主要配置对象，所有根下的项都是可选的"
+}

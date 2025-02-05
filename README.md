@@ -12,3 +12,8 @@
     推荐VSCode，有JSON schema悬浮提示
  - 迁移你的博客数据，参考`utils/typecho2one.ts`
  - 打开网站，看到一片天！
+
+# 后记
+## 代码高亮
+默认为了减小打包后JS大小，我们没有启用代码高亮，但是逻辑在代码中已经实现。
+在`src/utils/post.ts`将涉及highlight.js的内容取消注释即可
