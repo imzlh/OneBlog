@@ -24,17 +24,17 @@ export function get_thumb(post: IPost){
         case 'seqnum':
             if(typeof $t.url != 'string') throw new Error('URL should be a string when using seqnum type');
             const index = Math.round(Math.random() * ($t.range[1] - $t.range[0])) + $t.range[1];
-            return get_file($t.url.replace('%u', index.toString().padStart($t.pad, '0')));
+            return get_file($t.url.replace('%u', index.toString().padStart($t.pad, '0'))).href;
 
         case 'fixed':
             if((typeof $t.url == 'string') && $t.url.length != 0)
                 throwError('URL should be an array that contains multiple URLs when using fixed type');
-            return get_file($t.url[Math.floor(Math.random() * $t.url.length)]);
+            return get_file($t.url[Math.floor(Math.random() * $t.url.length)]).href;
 
         default:
             if(typeof $t.url != 'string')
                 throwError('URL should be a string.\nIf you want to randomly select from multiple URLs, use `seqnum` or `fixed` type.')
-            return get_file($t.url as string);
+            return get_file($t.url as string).href;
     }
 }
 // 遵循PHP写法
