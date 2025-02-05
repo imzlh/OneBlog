@@ -10,7 +10,7 @@
     <div class="list">
         <RouterLink :to="{ name: 'post-by-id', params: { id: post.name } }" class="card" v-for="post in posts"
             :key="post.created.toString()">
-            <img :src="get_thumb(post)." :alt="post.title">
+            <img :src="get_thumb(post)" :alt="post.title">
             <div class="more">
                 <h1>{{ post.title }}</h1>
                 <span class="time">{{ generate_date(post) }}</span>

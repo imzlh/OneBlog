@@ -6,6 +6,7 @@
     import { color_by_char } from '../utils/color';
     import CommentCard, { type IRawComment } from '../components/comment-card.vue';
     import { vJavaScript } from '../utils/vue';
+    import { vCodeHelper } from '../utils/code';
 
     const route = useRoute(),
         router = useRouter(),
@@ -62,7 +63,7 @@
         <hr>
 
         <!-- 文章内容 -->
-        <div class="content" v-html="$content" v-java-script></div>
+        <div class="content" v-html="$content" v-java-script v-code-helper></div>
         <div class="footer" v-html="CONFIG.footer_html"></div>
 
         <!-- 评论区 -->
@@ -170,13 +171,32 @@
                 word-wrap: break-word;
             }
             code {
-                padding: 0.2rem 0.4rem;
+                padding: .2rem .4rem;
                 background-color: #f5f5f5;
                 border-radius: 0.2rem;
                 font-size: 0.9rem;
                 font-family: Consolas, 'Courier New', monospace;
                 line-height: 1.5;
                 color: #3759c0;
+            }
+            pre{
+                padding: 1.5rem 0;
+                position: relative;
+                max-height: 80vh;
+
+                >code{
+                    padding: .6rem 1rem;
+                    line-height: 2;
+                    word-break: break-all;
+                    display: block;
+                }
+                >button{
+                    position: absolute;
+                    top: .5rem;
+                    right: .5rem;
+                    padding: .25rem .5rem;
+                    font-size: .85rem;
+                }
             }
             a {
                 color: #595454;
