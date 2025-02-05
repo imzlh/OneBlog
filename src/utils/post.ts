@@ -23,7 +23,7 @@ export function get_thumb(post: IPost){
     switch($t.type){
         case 'seqnum':
             if(typeof $t.url != 'string') throw new Error('URL should be a string when using seqnum type');
-            const index = Math.round(Math.random() * ($t.range[1] - $t.range[0])) + $t.range[1];
+            const index = Math.round(Math.random() * ($t.range[1] - $t.range[0])) + $t.range[0];
             return get_file($t.url.replace('%u', index.toString().padStart($t.pad, '0'))).href;
 
         case 'fixed':
