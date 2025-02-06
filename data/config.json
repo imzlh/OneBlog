@@ -1,0 +1,38 @@
+{
+    "$schema": "https://raw.githubusercontent.com/imzlh/OneBlog/refs/heads/master/src/type/config-schema.json",
+    "title": "Blog",
+    "description": "一个简单的博客",
+    "keywords": "blog, 博客",
+    "format_time": "Y-m-d H:i",
+    "comment": true,
+    "comment_per_page": 10,
+    "comment_required": ["name", "email", "content"],
+    "comment_order": "desc",
+    "xss_config": {
+        "ALLOW_UNKNOWN_PROTOCOLS": true
+    },
+    "post_per_page": 10,
+    "post_outline": 150,
+    "icp": "无",
+    "friend_link": {
+        "iz": "https://hi.imzlh.top/"
+    },
+    "api_soup": {
+        "url": "https://api.oick.cn/dutang/api.php",
+        "type": "text"
+    },
+    "social_link": {},
+    "default_thumb": {
+        "url": "https://t.mwm.moe/pc"
+    },
+    "loading_background": "gray",
+    "route": {
+        "home": "/",
+        "post": "/:year(\d{4})/:month(\d{2})/:day(\d{2}\.html)",
+        "post-by-id": "/p/:id",
+        "tag": "/tag/:tag",
+        "category": "/category/:category",
+        "search": "/search/:keyword(.*)",
+        "page": "/p/:page(.*)"
+    }
+}

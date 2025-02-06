@@ -1,0 +1,41 @@
+{
+  "name": "oneblog",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "serve": "deno task serve"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "dompurify": "^3.2.3",
+    "highlight.js": "^11.11.1",
+    "install": "^0.13.0",
+    "marked": "^15.0.6",
+    "marked-alert": "^2.1.2",
+    "marked-base-url": "^1.1.6",
+    "marked-highlight": "^2.2.1",
+    "npm": "^11.1.0",
+    "sass-embedded": "^1.83.4",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5",
+    "vue-router": "^4.5.0",
+    "vue-tsc": "^2.2.0"
+  },
+  "config": {
+    "base": "/data/",
+    "post_dir": "post/",
+    "page_dir": "page/",
+    "static_dir": "static/",
+    "config": "config.json",
+    "index": "index.bjson",
+    "server": "http://localhost:4560"
+  }
+}
