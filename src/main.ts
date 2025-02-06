@@ -176,12 +176,12 @@ const main_config = {
      */
     route: {
         home: '/',
-        post: '/:year(\d{4})/:month(\d{2})/:day(\d{2})',
+        post: '/:year(\\d{4})/:month(\\d{1,2})/:day(\\d{1,2})',
         "post-by-id": '/p/:id',
         tag: '/tag/:tag',
         category: '/category/:category',
         search: '/search/:keyword',
-        page: '/:path(.*)'
+        page: '/:path(.+)'
     }
 };
 export { main_config as CONFIG };

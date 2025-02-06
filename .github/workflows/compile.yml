@@ -5,6 +5,8 @@ name: Compile Vite Package
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 on:
   push:
@@ -40,4 +42,7 @@ jobs:
         tag: ${{ github.ref }}
         overwrite: true
         body: "这是已经打包完成的版本，解压后开箱即用"
-    
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: dist
