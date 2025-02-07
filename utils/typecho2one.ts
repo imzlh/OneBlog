@@ -7,6 +7,8 @@
  */
 
 import { Database } from "jsr:@db/sqlite";
+import { md5 } from "jsr:@takker/md5";
+import { encodeHex } from "jsr:@std/encoding@1/hex";
 
 Deno.chdir(import.meta.dirname!);
 const [ dbfile, prefix, replace ] = Deno.args;
@@ -48,9 +50,6 @@ const metas = db.prepare(`SELECT mid,name,type FROM ${prefix}metas`).all()
         return obj;
     }, {});
 
-const md5 = (str: string) => 
-    crypto.subtle.digest("MD5", new TextEncoder().encode(str));
-
 for (const post of stmt.iter()) {
     const { cid, title, slug, created, modified, text, type, order } = post;
     if (type !== "post" || !text) {
@@ -88,7 +87,7 @@ order: ${order}
 <!-- export from typecho -->
 ${text.replace("<!--markdown-->", "").replace(replace, config.base + config.static_dir)}
 `;
-    Deno.writeTextFileSync(path_posts + '/' + (await md5(slug) + created).replace(/[:*?"<>|]/g, '-') + '.md', postMD);
+    Deno.writeTextFileSync(path_posts + '/' + (encodeHex(md5(slug)) + created).replace(/[:*?"<>|]/g, '-') + '.md', postMD);
     console.log(new Date(created * 1000).toISOString(), title);
 }
 

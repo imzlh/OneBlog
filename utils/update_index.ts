@@ -65,3 +65,36 @@ for(const file of Deno.readDirSync(path_posts)){
 posts.sort((a, b) => a.order - b.order);
 await Deno.writeFile('../' + config.base + config.index, encode(posts));
 console.log('Index updated');
+
+// siteMap
+function generate_link(post: IPost){
+    const template = (CONFIG.route ?? {
+        post: '/:year(\\d{4})/:month(\\d{1,2})/:day(\\d{1,2})'
+    }).post.split('/'),
+    date = new Date(post.created);
+    for(const key in template){
+        if(template[key].startsWith(':year'))
+            template[key] = date.getFullYear().toString();
+        else if(template[key].startsWith(':month'))
+            template[key] = (date.getMonth() + 1).toString().padStart(2, '0');
+        else if(template[key].startsWith(':day'))
+            template[key] = date.getDate().toString().padStart(2, '0');
+    }
+    return template.join('/');
+}
+const siteMap = `<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<?xml-stylesheet type='text/xsl' href='sitemap.xsl'?>
+<urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">
+${posts.map(post => `
+    <url>
+        <loc>${generate_link(post)}</loc>
+        <lastmod>${new Date(post.modified).toISOString()}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>${ post.tags.includes('garbage') ? .2 : .8 }</priority>
+    </url>
+`).join('')}
+</urlset>`.replaceAll(/\s+/g, ' ');
+
+Deno.writeTextFileSync('../' + config.base + '/sitemap.xml', siteMap);
+console.log('SiteMap updated');
+console.info('Tip: copy your sitemap.xml to your website root directory to enable search engine indexing.')

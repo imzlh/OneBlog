@@ -11,6 +11,7 @@
  - 打开`package.json`和`data/config.json`自己修改你要的配置
     推荐VSCode，有JSON schema悬浮提示
  - 迁移你的博客数据，参考`utils/typecho2one.ts`
+ - 产生索引，使用`deno task update_index`
  - 打开网站，看到一片天！
 
 # 后记
