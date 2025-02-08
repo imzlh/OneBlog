@@ -38,6 +38,7 @@ export const Unknown = Symbol("Unknown");
  * @returns Buffer
  */
 export function int2buf(value: number | bigint): Uint8Array {
+    let isInt = Number.isInteger(value);
     value = typeof value === "bigint" ? value : BigInt(Math.abs(value));
     const bytes: number[] = [];
     do {
@@ -46,7 +47,7 @@ export function int2buf(value: number | bigint): Uint8Array {
     } while (value > 0n);
 
     // 确保数组长度不超过 15 个字节
-    if (bytes.length > 0xf) {
+    if (isInt && bytes.length > 0xf) {
         throw new Error("Value " + value + " exceeds the maximum safe integer for bJSON");
     }
 
@@ -69,10 +70,6 @@ async function encodeData(obj: any, pipe: WritableStreamDefaultWriter<Uint8Array
     switch (typeof obj) {
         case "boolean":
             await pipe.write(new Uint8Array([(obj ? 1 : 0) + (DataType.Boolean << 4)]));
-            break;
-
-        case "undefined":
-            await pipe.write(new Uint8Array([DataType.Null << 4]));
             break;
 
         case "symbol":
@@ -191,38 +188,39 @@ declare global {
  * @returns 解码后的原始数据
  */
 function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any> {
-    let index = 0;
-    let overflowBuffer: Uint8Array | undefined,
-        expectedBuffer = new Uint8Array(0),
-        offset = 0;
+    let overflowBuffer: Uint8Array | undefined;
+    let offset = 0;
+    let expectedBuffer: Uint8Array;
 
-    async function readBytes(len = 1) {
+    async function readBytes(len = 1): Promise<Uint8Array> {
         expectedBuffer = new Uint8Array(len);
         offset = 0;
-        if(overflowBuffer)
-            if(overflowBuffer.byteLength >= len) {
+
+        if (overflowBuffer) {
+            if (overflowBuffer.byteLength >= len) {
                 expectedBuffer.set(overflowBuffer.slice(0, len));
-                overflowBuffer = overflowBuffer.slice(len);
+                overflowBuffer = overflowBuffer.byteLength > len ? overflowBuffer.slice(len) : undefined;
                 return expectedBuffer;
-            }else{
+            } else {
                 expectedBuffer.set(overflowBuffer, 0);
+                offset = overflowBuffer.byteLength;
                 overflowBuffer = undefined;
             }
-        // 没有填充满：直接读取
-        while (offset < expectedBuffer.byteLength) {
+        }
+
+        while (offset < len) {
             const readResult = await pipe.read();
             if (readResult.done) {
-                throw new Error("Unexpected end of stream (expected " + len + " bytes, but only " + offset + " bytes available)");
-            }else{
-                // 如果读取到的数据，将其与当前 buffer 合并
-                const newData = readResult.value,
-                    expected = len - offset;
+                throw new Error(`Unexpected end of stream (expected ${len} bytes, but only ${offset} bytes available)`);
+            } else {
+                const newData = readResult.value;
+                const expected = len - offset;
                 expectedBuffer.set(newData.subarray(0, expected), offset);
                 offset += Math.min(newData.byteLength, expected);
 
-                // 溢出
-                if(newData.byteLength > expected)
+                if (newData.byteLength > expected) {
                     overflowBuffer = newData.slice(expected);
+                }
             }
         }
 
@@ -231,75 +229,84 @@ function decodeData(pipe: ReadableStreamDefaultReader<Uint8Array>): Promise<any>
 
     async function decodeValue(): Promise<any> {
         let header = 0;
-        try{
+        try {
             header = (await readBytes())[0];
-        }catch{
-            if(index === 0) return undefined;
+        } catch (error) {
+            // 当一个也没有读取到时，得知应该是被忽略的undefined
+            if (expectedBuffer && offset == 0) return undefined;
+            throw error;
         }
-        const dataType = header >> 4;
+        const dataType = header >> 4,
+            additionalData = header & 0xf;
 
         switch (dataType) {
             case DataType.Boolean:
-            return !!(header & 0b1);
-            
-            case DataType.Null:
-            return header & 0b1 ? undefined : null;
+                return !!additionalData;
 
-            case DataType.String:
-                const lenlen = header & 0b1111, len = buf2int(await readBytes(lenlen));
-            return new TextDecoder().decode(await readBytes(len));
+            case DataType.Null:
+                return additionalData ? undefined : null;
+
+            case DataType.String: {
+                const strLen = buf2int(await readBytes(additionalData));
+                return new TextDecoder().decode(await readBytes(strLen));
+            }
 
             case DataType.Int:
-            case DataType.NInt:
-                const nlen = header & 0b1111,
-                    res = await readBytes(nlen),
-                    num = buf2int(res);
-            return dataType === DataType.NInt ? -num : num;
+            case DataType.NInt: {
+                const res = await readBytes(additionalData);
+                const num = buf2int(res);
+                return dataType === DataType.NInt ? -num : num;
+            }
 
-            case DataType.Float:
-                const len2 = header & 0b1111;
-                const view = new DataView((await readBytes(len2)).pad(8).buffer);
-            return view.getFloat64(0);
+            case DataType.Float: {
+                const view = new DataView((await readBytes(additionalData)).pad(8).buffer);
+                return view.getFloat64(0);
+            }
 
-            case DataType.BigInt:
-                const nlen2 = header & 0b1111,
-                    nlen3 = buf2int(await readBytes(nlen2));
-            return buf2int(await readBytes(nlen3), true);
+            case DataType.BigInt: {
+                const numLen = buf2int(await readBytes(additionalData));
+                return buf2int(await readBytes(numLen), true);
+            }
 
-            case DataType.Array:
-                const lenlen2 = header & 0b1111, arrLen = buf2int(await readBytes(lenlen2));
-                const arr = [];
-                for (let i = 0; i < arrLen; i++)
+            case DataType.Array: {
+                const arrLen = buf2int(await readBytes(additionalData));
+                const arr: any[] = [];
+                for (let i = 0; i < arrLen; i++) {
                     arr.push(await decodeValue());
-            return arr;
-
-            case DataType.Object:
-                const obj: Record<string, any> = {},
-                    lenlen3 = header & 0b1111, objLen = buf2int(await readBytes(lenlen3));
-                for(let i = 0; i < objLen; i++) {
-                    const keyLen = (await readBytes())[0],
-                        key = new TextDecoder().decode(await readBytes(keyLen));
-                    obj[key] = await decodeValue()
                 }
-            return obj;
+                return arr;
+            }
 
-            case DataType.Binary:
-                const binaryLen = buf2int(await readBytes(header & 0b1111));
-            return readBytes(binaryLen);
+            case DataType.Object: {
+                const obj: Record<string, any> = {};
+                const objLen = buf2int(await readBytes(additionalData));
+                for (let i = 0; i < objLen; i++) {
+                    const keyLen = (await readBytes())[0];
+                    const key = new TextDecoder().decode(await readBytes(keyLen));
+                    obj[key] = await decodeValue();
+                }
+                return obj;
+            }
+
+            case DataType.Binary: {
+                const binaryLen = buf2int(await readBytes(additionalData));
+                return await readBytes(binaryLen);
+            }
 
             case DataType.Unknown:
-            return Unknown;
+                return Unknown;
 
             case DataType.Infinity:
-            return header & 0x1 ? Infinity : -Infinity;
+                return header & 0x1 ? Infinity : -Infinity;
 
             default:
-                throw new Error("Unknown data type " + dataType + " at offset " + index);
+                throw new Error(`Unknown data type ${dataType}`);
         }
     }
 
     return decodeValue();
 }
+
 
 /**
  * 压缩数据
