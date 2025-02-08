@@ -18,3 +18,7 @@
 ## 代码高亮
 默认为了减小打包后JS大小，我们没有启用代码高亮，但是逻辑在代码中已经实现。
 在`src/utils/post.ts`将涉及highlight.js的内容取消注释即可
+
+## 特殊标签(tag)
+ - `garbage`写一些没营养的东西，在SiteMap权重自动下降
+ - `important`反之

@@ -52,7 +52,7 @@ for(const file of Deno.readDirSync(path_posts)){
             attachment: metaObj.attachment ? metaObj.attachment.split(',') : get_attachments(content),
             tags: metaObj.tags ? metaObj.tags.split(/\s*\,\s*/) : [],
             category: metaObj.category,
-            outline: dom.body.innerText.replaceAll(/\s+/g, ' ').trim().substring(0, CONFIG.post_outline),
+            outline: dom.body.innerText.replaceAll(/\s+/g, ' ').trim().substring(0, CONFIG.post_outline ?? 100),
             name: file.name.replace(/\.md$/, '')
         }
         posts.push(data);
@@ -82,15 +82,17 @@ function generate_link(post: IPost){
     }
     return template.join('/');
 }
+const get_weight = (post: IPost) => 
+    post.tags.includes('garbage') ? .2 : (post.tags.includes('important') ? 1 : .8);
 const siteMap = `<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <?xml-stylesheet type='text/xsl' href='sitemap.xsl'?>
 <urlset xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\" xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">
-${posts.map(post => `
+${posts.sort((a, b) => a.order - b.order).map(post => `
     <url>
         <loc>${generate_link(post)}</loc>
         <lastmod>${new Date(post.modified).toISOString()}</lastmod>
         <changefreq>daily</changefreq>
-        <priority>${ post.tags.includes('garbage') ? .2 : .8 }</priority>
+        <priority>${ get_weight(post) }</priority>
     </url>
 `).join('')}
 </urlset>`.replaceAll(/\s+/g, ' ');
