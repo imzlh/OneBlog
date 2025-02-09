@@ -43,6 +43,7 @@
         $title.value = _p.info.title;
         $date.value = generate_date(_p.info);
         $tags.value = _p.info.tags;
+        post = _p;
     }, { immediate: true });
 
     const post_comment = (comment: IRawComment) => post!.post_comment(comment)
@@ -56,9 +57,10 @@
         <p>Published on {{ $date }}</p>
 
         <div class="tags">
-            <div v-for="tag in $tags" :key="tag"
+            <RouterLink v-for="tag in $tags" :key="tag"
                 :style="{ backgroundColor: color_by_char(tag) }"
-            >{{ tag }}</div>
+                :to="{ name: 'tag', params: { tag } }"
+            >{{ tag }}</RouterLink>
         </div>
         <hr>
 
@@ -96,13 +98,14 @@
             flex-wrap: wrap;
             margin-bottom: 1rem;
 
-            > div {
+            > a {
                 margin-right: 0.5rem;
                 padding: 0.2rem 1rem;
                 border-radius: 0.8rem;
                 font-size: 0.85rem;
                 text-transform: uppercase;
                 color: #fff;
+                text-decoration: none;
 
                 &::before{
                     content: '# ';

@@ -1,6 +1,6 @@
 import { is_image } from "./define";
 import { CONFIG, get_file, show_error } from "../main";
-import { decode } from "./bjson";
+import { decode, encode2Blob } from "./bjson";
 import { config } from '../../package.json';
 import { parse, use as mdUse, Renderer } from 'marked';
 import markedAlert from 'marked-alert';
@@ -213,7 +213,7 @@ export class Post{
 
     async get_comment(): Promise<Array<IComment>>{
         if(!CONFIG.comment) throw new Error('Comment is disabled');
-        const url = config.server + '/' + this.$post.created,
+        const url = config.server + '?id=' + this.$post.created,
             res = await fetch(url);
         if(res.status == 204) return [];
         if(res.status != 200) throw new Error('Failed to fetch comment');
@@ -225,10 +225,8 @@ export class Post{
         for(const key of CONFIG.comment_required)
             // @ts-ignore
             if(!comment[key]) throw new Error(`Comment ${key} is required`);
-        const url = config.server + '/' + (
-            from ? `${from.uuid}?comment` : this.$post.created + '?post'
-        ),
-            res = await fetch(url, { method: 'POST', body: JSON.stringify(comment) });
+        const url = config.server + '?id=' + (from?.uuid || this.$post.created),
+            res = await fetch(url, { method: from ? 'PUT' : 'POST', body: await encode2Blob(comment) });
         if(res.status != 200) throw new Error('Failed to post comment');
     }
 
