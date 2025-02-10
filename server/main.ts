@@ -24,6 +24,7 @@ const [ , scheme, hostname, _port ] = config.server.match(/^(\w+):\/\/(.+)\:(\d+
 new Server(scheme, port, hostname)
     .header('Access-Control-Allow-Origin', '*')
     .header('Access-Control-Allow-Methods', 'GET,POST,PUT')
+    .header('Access-Control-Allow-Headers', 'Content-Type')
     .on('GET', async res => {
         const postid = res.url.searchParams.get('id');
         if(!postid) return res.status(404).end();
@@ -31,6 +32,7 @@ new Server(scheme, port, hostname)
             (await Comment.get_by_postid(postid))
                 .map(comment => comment.export())
         );
+        if(comments.length == 0) res.status(204).end();
         res.end(encode(comments));
     })
     .on('POST', async res => {

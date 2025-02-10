@@ -33,7 +33,7 @@ export class vResponse{
     end(chunk?: string | Uint8Array | ReadableStream<Uint8Array>){
         if(chunk && !(chunk instanceof ReadableStream)) this.chunk(chunk);
         const body = chunk instanceof ReadableStream? chunk : new Blob(this.$content),
-            res = new Response(body, {
+            res = new Response(this.$status == 204 ? null : body, {
                 status: this.$status,
                 headers: this.$headers
             });
@@ -87,6 +87,11 @@ export default class Server{
 
     start(){
         const handler = (req: Request, inf: Deno.ServeHandlerInfo) => {
+            if(req.method == "OPTIONS")
+                return new Response(null, {
+                    status: 204,
+                    headers: new Headers(this.$defHeader)
+                });
             // deno-lint-ignore no-async-promise-executor
             return new Promise<Response>(async rs => {
                 const res = new vResponse(req, inf.remoteAddr, new Headers(this.$defHeader), rs);
