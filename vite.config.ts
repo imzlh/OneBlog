@@ -11,7 +11,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id){
-                    if(id.includes('/src/admin/')){
+                    if(id.includes('/src/admin/') || id.includes('/@muyajs/')){
                         return 'admin';
                     }else{
                         return 'app';
