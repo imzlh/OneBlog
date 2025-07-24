@@ -11,7 +11,11 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id){
-                    if(id.includes('/src/admin/') || id.includes('/@muyajs/')){
+                    if(id.includes('/prism-')){
+                        return 'prism'; // 防止access before initialization
+                    }else if(id.includes('/@muyajs/')){
+                        return 'muya';
+                    }else if(id.includes('/src/admin/')){
                         return 'admin';
                     }else{
                         return 'app';

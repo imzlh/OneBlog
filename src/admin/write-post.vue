@@ -1,20 +1,4 @@
 <script lang="ts" setup>
-    import {
-        CodeBlockLanguageSelector,
-        EmojiSelector,
-        ImageEditTool,
-        ImageResizeBar,
-        ImageToolBar,
-        InlineFormatToolbar,
-        Muya,
-        ParagraphFrontButton,
-        ParagraphFrontMenu,
-        ParagraphQuickInsertMenu,
-        PreviewToolBar,
-        TableColumnToolbar,
-        TableDragBar,
-        TableRowColumMenu
-    } from '@muyajs/core';
     import '@muyajs/core/lib/style.css';
     import type { Search } from '@muyajs/core/lib/types/search/index.js';
     import { onMounted, onUnmounted, reactive, ref } from 'vue';
@@ -24,20 +8,7 @@
     import Autofill from './autofill.vue';
     import Filelist from './filelist.vue';
     import { config } from '../../package.json';
-
-    Muya.use(EmojiSelector);
-    Muya.use(InlineFormatToolbar);
-    Muya.use(ImageToolBar);
-    Muya.use(ImageResizeBar);
-    Muya.use(CodeBlockLanguageSelector);
-    Muya.use(ImageEditTool);
-    Muya.use(ParagraphFrontButton);
-    Muya.use(ParagraphFrontMenu);
-    Muya.use(TableColumnToolbar);
-    Muya.use(ParagraphQuickInsertMenu);
-    Muya.use(TableDragBar);
-    Muya.use(TableRowColumMenu);
-    Muya.use(PreviewToolBar);
+    import Loading from './loading.vue';
 
     const container = ref<HTMLElement>(),
         CFG = reactive({
@@ -58,7 +29,8 @@
         _pid = useRoute().query.pid,
         post = typeof _pid == 'string' ? (Post.get(_pid) ?? Post.new()) : Post.new();
     post.set_reactive();
-    let muya: Muya | undefined;
+    let muya: import('@muyajs/core').Muya | undefined;
+    const loading = ref(true);
 
     const reqFullscreen = () => {
         if(document.fullscreenElement){
@@ -74,6 +46,38 @@
             box = document.createElement('div');
         box.classList.add('md-container');
         (container.value as HTMLElement).append(box);
+
+        const {
+            CodeBlockLanguageSelector,
+            EmojiSelector,
+            ImageEditTool,
+            ImageResizeBar,
+            ImageToolBar,
+            InlineFormatToolbar,
+            Muya,
+            ParagraphFrontButton,
+            ParagraphFrontMenu,
+            ParagraphQuickInsertMenu,
+            PreviewToolBar,
+            TableColumnToolbar,
+            TableDragBar,
+            TableRowColumMenu
+        } = await import('@muyajs/core');
+
+        Muya.use(EmojiSelector);
+        Muya.use(InlineFormatToolbar);
+        Muya.use(ImageToolBar);
+        Muya.use(ImageResizeBar);
+        Muya.use(CodeBlockLanguageSelector);
+        Muya.use(ImageEditTool);
+        Muya.use(ParagraphFrontButton);
+        Muya.use(ParagraphFrontMenu);
+        Muya.use(TableColumnToolbar);
+        Muya.use(ParagraphQuickInsertMenu);
+        Muya.use(TableDragBar);
+        Muya.use(TableRowColumMenu);
+        Muya.use(PreviewToolBar);
+
         (muya = new Muya(box, {
             "markdown": text,
             "autoPairBracket": true,
@@ -86,6 +90,7 @@
             "math": true,
             "tabSize": 4
         })).init();
+        loading.value = false;
         muya.setContent(previousContent = await post.get_md());
     });
 
@@ -225,7 +230,8 @@
 
 <template>
     <h1>写文章</h1>
-    <div class="md-root" ref="container">
+    <Loading v-if="loading"></Loading>
+    <div class="md-root" v-show="!loading" ref="container">
         <div class="md-info">
             <input type="text" class="title" v-model="post.info.title" placeholder="标题">
             <div class="more">

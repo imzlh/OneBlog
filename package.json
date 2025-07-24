@@ -39,6 +39,6 @@
     "index": "index.bjson",
     "___comment___": "当评论系统启用时，指定评论系统API地址",
     "server": "http://localhost:4560",
-    "admin": false
+    "admin": true
   }
 }

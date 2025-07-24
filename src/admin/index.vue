@@ -1,8 +1,7 @@
-<script lang="ts" setup>
+<script lang="tsx" setup>
     import { computed } from 'vue';
     import { Post } from '../utils/post';
     import { useRoute } from 'vue-router';
-    import writePost from './write-post.vue';
 
     import { config } from '../../package.json';
 
@@ -10,6 +9,7 @@
     import Posts from './posts.vue';
     import Comments from './comments.vue';
     import Setting from './setting.vue';
+    import Post2 from './write-post.vue';
 
     function getWelcome() {
         const hour = new Date().getHours();
@@ -30,11 +30,12 @@
     const totalPost = Post.get_all().array.length,
         totalComment = 0;   // TODO: get total comment count
 
+    const $route = useRoute();
     const realpage = computed(() => {
-        const route = useRoute().params.page;
+        const route = $route.params.page;
         switch(route){
             case 'post':
-                return writePost;
+                return Post2;
             case 'comment':
                 return Comments;
             case 'posts':
