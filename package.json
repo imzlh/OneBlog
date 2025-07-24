@@ -10,6 +10,7 @@
     "serve": "deno task serve"
   },
   "dependencies": {
+    "@muyajs/core": "^0.0.32",
     "vue": "^3.5.13"
   },
   "devDependencies": {
@@ -36,6 +37,8 @@
     "static_dir": "static/",
     "config": "config.json",
     "index": "index.bjson",
-    "server": "http://localhost:4560"
+    "___comment___": "当评论系统启用时，指定评论系统API地址",
+    "server": "http://localhost:4560",
+    "admin": false
   }
 }
