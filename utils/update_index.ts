@@ -1,5 +1,5 @@
 import { encode } from "../src/utils/bjson.ts";
-import { parse } from 'npm:marked';
+import { parse } from 'jsr:@cascades/markdown-parser';
 import { DOMParser } from "jsr:@b-fuze/deno-dom";
 
 Deno.chdir(import.meta.dirname!);
@@ -24,6 +24,11 @@ export function get_attachments(data: string): string[] {
 }
 
 const posts = [] as IPost[];
+const newDate = (dstr: string) => {
+    const date = new Date(dstr);
+    date.toISOString(); // check if vaild
+    return date;
+}
 for(const file of Deno.readDirSync(path_posts)){
     if(file.isFile && file.name.endsWith('.md')) try{
         const { ctime, mtime } = Deno.statSync(path_posts + '/' + file.name);
@@ -40,13 +45,18 @@ for(const file of Deno.readDirSync(path_posts)){
                 metaObj[_match[1].toLowerCase()] = _match[2];
         }
 
+        // 检查是否漏了必要的meta
+        if(!metaObj.title || !metaObj.category){
+            throw new Error('Missing meta for ' + file.name + ': title or category');
+        }
+
         // 解析MD内容
         const dom = new DOMParser().parseFromString(await parse(content), 'text/html');
 
         // 提取内容
         const data: IPost = {
-            created: (new Date(metaObj.created) || ctime)!.getTime(),
-            modified: (new Date(metaObj.modified) || mtime)!.getTime(),
+            created: (newDate(metaObj.created) || ctime)!.getTime(),
+            modified: (newDate(metaObj.modified) || mtime)!.getTime(),
             title: metaObj.title,
             order: metaObj.order ? parseInt(metaObj.order) : 0,
             attachment: metaObj.attachment ? metaObj.attachment.split(',') : get_attachments(content),

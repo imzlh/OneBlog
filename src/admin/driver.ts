@@ -84,8 +84,8 @@ export async function update_post(post: Post, contents: string) {
     // write to file
     const content = `---
 title: ${post.info.title}
-created: ${post.info.created}
-modified: ${post.info.modified}
+created: ${new Date(post.info.created).toDateString()}
+modified: ${new Date(post.info.modified).toDateString()}
 tags: ${post.info.tags.join(',')}
 category: ${post.info.category}
 ---

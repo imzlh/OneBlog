@@ -91,6 +91,10 @@
 
     function save(){
         if(!muya) return;
+        if(!post.info.category || !post.info.title){
+            alert('请填写标题和分类');
+            return;
+        }
         
         update_post(post, muya.getMarkdown());
         alert('保存成功');
