@@ -17,14 +17,13 @@
     } from '@muyajs/core';
     import '@muyajs/core/lib/style.css';
     import type { Search } from '@muyajs/core/lib/types/search/index.js';
-    import { onMounted, onUnmounted, reactive, ref, shallowReactive } from 'vue';
+    import { onMounted, onUnmounted, reactive, ref } from 'vue';
     import { Post } from '../utils/post';
     import { useRoute, useRouter } from 'vue-router';
     import { update_post } from './driver';
     import Autofill from './autofill.vue';
     import Filelist from './filelist.vue';
     import { config } from '../../package.json';
-    import { CONFIG } from '../main';
 
     Muya.use(EmojiSelector);
     Muya.use(InlineFormatToolbar);
@@ -211,7 +210,7 @@
 
     onUnmounted(() => muya && muya.destroy());
 
-    const uninstall = useRouter().beforeEach((to, from) => {
+    const uninstall = useRouter().beforeEach(() => {
         if(previousContent != muya!.getMarkdown()){
             return confirm('当前页面未保存，确定离开吗?');
         }

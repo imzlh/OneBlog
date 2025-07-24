@@ -3,7 +3,6 @@
  */
 import { config } from '../../package.json';
 import { CONFIG } from '../main';
-import { md5 } from '../utils/MD5';
 import { exportIndex, Post } from '../utils/post';
 
 export class RemoteFile{
@@ -13,7 +12,7 @@ export class RemoteFile{
 
     static async __get(f: string){
         this.__check_enabled();
-        const url = `${config.davbase}${config.base}${f}`;
+        const url = `${CONFIG.davroot}${config.base}${f}`;
         const res = await fetch(url);
         if(!res.ok) throw new Error(`Failed to fetch ${url}: ${res.statusText}`);
         return res;
@@ -21,7 +20,7 @@ export class RemoteFile{
 
     static async __put(f: string, data: XMLHttpRequestBodyInit){
         this.__check_enabled();
-        const url = `${config.davbase}${config.base}${f}`;
+        const url = `${CONFIG.davroot}${config.base}${f}`;
         const res = await fetch(url, {
             method: 'PUT',
             body: data,
@@ -35,7 +34,7 @@ export class RemoteFile{
 
     static __put_with_progress(f: string, data: XMLHttpRequestBodyInit, progress: (loaded: number, total: number) => void){
         this.__check_enabled();
-        const url = `${config.davbase}${config.base}${f}`;
+        const url = `${CONFIG.davroot}${config.base}${f}`;
         const xhr = new XMLHttpRequest();
         xhr.open('PUT', url);
         xhr.setRequestHeader('Content-Type', 'application/octet-stream');
@@ -52,7 +51,7 @@ export class RemoteFile{
 
     static async __mkdir(p: string){
         this.__check_enabled();
-        const url = `${config.davbase}${config.base}${p}/`;
+        const url = `${CONFIG.davroot}${config.base}${p}/`;
         const res = await fetch(url, {
             method: 'MKCOL'
         });
