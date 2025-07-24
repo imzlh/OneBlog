@@ -192,7 +192,7 @@ const main_config = {
 export { main_config as CONFIG };
 
 // 尝试启动主程序
-try{
+(async function (){
     const user_config = await (await fetch(get_file(config.config))).json()
     for(const key in user_config)
         // @ts-ignore
@@ -256,11 +256,11 @@ try{
         component: () => import('./admin/index.vue').then(m => m.default as Component),
     })
     __init().then(() => main(routeCfg));
-}catch(e){
+})().catch(e => {
     // 显示 
     show_error(500, '无法获取配置，请联系站长！');
     console.error(e);
-}
+});
 
 function main(routeCfg: any){
     if(app_destroyed) return;

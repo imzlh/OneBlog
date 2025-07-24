@@ -7,7 +7,7 @@ export default defineConfig({
         vue()
     ],
     build: {
-        target: 'es6',
+        target: 'es2020',
         rollupOptions: {
             output: {
                 manualChunks(id){
