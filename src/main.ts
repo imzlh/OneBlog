@@ -1,7 +1,7 @@
-import { createApp } from 'vue';
+import { createApp, type Component } from 'vue';
 import App from './App.vue';
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import { config } from '../package.json';
+import { config } from '../package.json' with { type: 'json' };
 import EPage from './page/error.vue';
 import Home from './page/home.vue';
 import Post from './page/post.vue';
@@ -182,7 +182,12 @@ const main_config = {
         category: '/category/:category',
         search: '/search/:keyword',
         page: '/:path(.+)'
-    }
+    },
+
+    /**
+     * 仅用于admin后台，base绝对路径，需要WebDAV PUT方法支持
+     */
+    davroot: ''
 };
 export { main_config as CONFIG };
 
@@ -244,6 +249,12 @@ try{
             handle: () => location.replace('/')
         })
     });
+
+    routeCfg.push({
+        path: '/admin/:page',
+        name: 'admin',
+        component: () => import('./admin/index.vue').then(m => m.default as Component),
+    })
     __init().then(() => main(routeCfg));
 }catch(e){
     // 显示 

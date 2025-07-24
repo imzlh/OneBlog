@@ -186,6 +186,7 @@
                 padding: 1.5rem 0;
                 position: relative;
                 max-height: 80vh;
+                overflow-y: auto;
 
                 >code{
                     padding: .6rem 1rem;

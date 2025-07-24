@@ -8,7 +8,8 @@
 
 import { Database } from "jsr:@db/sqlite";
 import { md5 } from "jsr:@takker/md5";
-import { encodeHex } from "jsr:@std/encoding@1/hex";
+
+const hmac = (t: string) => crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)).toString();
 
 Deno.chdir(import.meta.dirname!);
 const [ dbfile, prefix, replace ] = Deno.args;
@@ -87,7 +88,7 @@ order: ${order}
 <!-- export from typecho -->
 ${text.replace("<!--markdown-->", "").replace(replace, config.base + config.static_dir)}
 `;
-    Deno.writeTextFileSync(path_posts + '/' + (encodeHex(md5(slug)) + created).replace(/[:*?"<>|]/g, '-') + '.md', postMD);
+    Deno.writeTextFileSync(path_posts + '/' + (created | order).toString(16) + '.md', postMD);
     console.log(new Date(created * 1000).toISOString(), title);
 }
 

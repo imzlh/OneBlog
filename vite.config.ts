@@ -7,6 +7,17 @@ export default defineConfig({
         vue()
     ],
     build: {
-        target: 'esnext'
+        target: 'es6',
+        rollupOptions: {
+            output: {
+                manualChunks(id){
+                    if(id.includes('/src/admin/')){
+                        return 'admin';
+                    }else{
+                        return 'app';
+                    }
+                }
+            }
+        }
     }
 })

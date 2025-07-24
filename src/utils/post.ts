@@ -5,6 +5,7 @@ import { config } from '../../package.json';
 import { parse, use as mdUse, Renderer } from 'marked';
 import markedAlert from 'marked-alert';
 import { baseUrl } from 'marked-base-url';
+import { reactive } from "vue";
 // import markedHighlight from 'marked-highlight';
 
 // highlight.js
@@ -192,9 +193,22 @@ export class Post{
         return Array.from(categories);
     }
 
-    constructor(private $post: IPost){}
+    static new(){
+        return new this({
+            "attachment": [],
+            "created": 0,
+            "modified": 0,
+            "name": "",
+            "title": "",
+            "order": 0,
+            "tags": []
+        }, true);
+    }
+
+    constructor(private $post: IPost, private $create = false){}
     
-    async get_html(){
+    async get_md(){
+        if(this.$create) return '';
         const fe = await fetch(get_file(config.post_dir + this.$post.name + '.md'))
         if(!fe.ok) throw new Error('Failed to fetch post content');
         const text = await fe.text();
@@ -204,7 +218,12 @@ export class Post{
         let content = text;
         if(split_line) content = text.substring(split_line.index! + split_line[0].length);
 
-        return parse(content, {
+        return content;
+    }
+
+    async get_html(){
+        const md = await this.get_md();
+        return parse(md, {
             gfm: true,
             breaks: true,
             renderer
@@ -232,6 +251,22 @@ export class Post{
 
     get info(){
         return this.$post;
+    }
+
+    set_reactive(){
+        this.$post = reactive(this.$post);
+    }
+
+    save(){
+        if(this.$create){
+            cache.post.push(this.$post);
+            this.$post.created = Date.now();
+            this.$post.modified = this.$post.created;
+            this.$post.name = this.$post.created.toString(16);
+            this.$create = false;
+        }else{
+            this.$post.modified = Date.now();
+        }
     }
 }
 
@@ -275,3 +310,7 @@ export const parseMd = (content: string) => parse(content, {
     breaks: true,
     renderer
 });
+
+export function exportIndex(){
+    return encode2Blob(cache.post);
+}

@@ -261,6 +261,11 @@
             ],
             "additionalProperties": false,
             "description": "配置vue-router的路由规则，注意：目前只有post、tag、category、search、page这五个路由是动态的，还有一个别名路由'post-by-id'"
+        },
+        "davroot": {
+            "type": "string",
+            "description": "仅用于admin后台，base绝对路径，需要WebDAV PUT方法支持",
+            "additionalProperties": true
         }
     },
     "additionalProperties": false,
