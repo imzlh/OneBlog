@@ -183,7 +183,7 @@ const formatFileSize = (bytes: number): string => {
 }
 
 .dropzone.is-dragover {
-    border-color: #4d90fe;
+    border-color: #b7c4da;
     background-color: rgba(77, 144, 254, 0.1);
 }
 
@@ -196,14 +196,13 @@ const formatFileSize = (bytes: number): string => {
 }
 
 .dropzone-content svg {
-    color: #4d90fe;
+    color: #dae1ed;
     margin-bottom: 0.5rem;
     margin-top: 1.5rem;
 }
 
 .upload-btn {
-    background-color: #4d90fe;
-    color: white;
+    background-color: #edf4ff;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
@@ -212,7 +211,7 @@ const formatFileSize = (bytes: number): string => {
 }
 
 .upload-btn:hover {
-    background-color: #3a7de8;
+    background-color: #cdfcff;
 }
 
 .file-list {
