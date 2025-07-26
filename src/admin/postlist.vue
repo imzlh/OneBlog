@@ -14,7 +14,7 @@
             <div class="filter-row">
                 <Autofill 
                     v-model="selectedCategory"
-                    :options="['所有分类', allCategories]"
+                    :options="['所有分类', ...allCategories]"
                     placeholder="选择分类"
                     @select="selectedCategory = $event == '所有分类' ? null : $event as string"
                 />
@@ -27,12 +27,13 @@
                     placeholder="选择标签"
                     @select="selectedTags.includes($event as string) || selectedTags.push($event as string); tagQuery = ''"
                 />
-                <div v-if="selectedTags.length" class="selected-tags">
-                    <span v-for="tag in selectedTags" :key="tag" class="selected-tag">
-                        {{ tag }}
-                        <span @click.stop="selectedTags = selectedTags.filter(t => t !== tag)" class="remove-tag">×</span>
-                    </span>
-                </div>
+            </div>
+
+            <div v-if="selectedTags.length" class="selected-tags">
+                <span v-for="tag in selectedTags" :key="tag" class="selected-tag">
+                    {{ tag }}
+                    <span @click.stop="selectedTags = selectedTags.filter(t => t !== tag)" class="remove-tag">×</span>
+                </span>
             </div>
         </div>
 
@@ -67,7 +68,8 @@
 
 <script setup lang="ts">
     import { computed, ref } from 'vue'
-import Autofill from './autofill.vue';
+    import Autofill from './autofill.vue';
+    import { Post } from '../utils/post';
 
     interface Props {
         posts: IPost[]
@@ -89,22 +91,10 @@ import Autofill from './autofill.vue';
     const dateRange = ref<[Date | null, Date | null]>([null, null])
 
     // 提取所有分类
-    const allCategories = computed(() => {
-        const categories = new Set<string>()
-        posts.forEach(post => {
-            if(post.category) categories.add(post.category)
-        })
-        return Array.from(categories)
-    })
+    const allCategories = Post.get_all_categories();
 
     // 提取所有标签
-    const allTags = computed(() => {
-        const tags = new Set<string>()
-        posts.forEach(post => {
-            post.tags?.forEach(tag => tags.add(tag))
-        })
-        return Array.from(tags)
-    })
+    const allTags = Post.get_all_tags();
 
     // 筛选后的文章列表
     const filteredPosts = computed(() => {

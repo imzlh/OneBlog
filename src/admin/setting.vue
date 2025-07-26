@@ -321,6 +321,7 @@ const handleSave = async () => {
     try {
         Object.assign(_config, formData);
         await update_config();
+        alert('保存成功!');
 
         emit('save', formData)
         emit('update:modelValue', formData)
