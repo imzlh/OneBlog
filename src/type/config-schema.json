@@ -262,6 +262,20 @@
             "additionalProperties": false,
             "description": "配置vue-router的路由规则，注意：目前只有post、tag、category、search、page这五个路由是动态的，还有一个别名路由'post-by-id'"
         },
+        "img_cdn": {
+            "type": "object",
+            "description": "用于在解析markdown时注入，替换图片前缀",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "description": "要替换的字符串"
+                },
+                "to": {
+                    "type": "string",
+                    "description": "替换为"
+                }
+            }
+        },
         "davroot": {
             "type": "string",
             "description": "仅用于admin后台，base绝对路径，需要WebDAV PUT方法支持",

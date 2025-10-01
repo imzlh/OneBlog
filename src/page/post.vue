@@ -256,6 +256,58 @@
                 width: 50%;
                 margin: 5rem auto;
             }
+
+            // extension: GFW
+            .markdown-alert {
+                padding: 0 1rem;
+                border-left: solid .3rem transparent;
+                margin: 1rem -.5rem;
+                padding: .25rem 1rem;
+
+                p.markdown-alert-title {
+                    color: var(--base-color);
+                    display: flex;
+                    align-items: center;
+                    margin: 0;
+                    gap: .65rem;
+                }
+
+                svg.octicon {
+                    display: inline-block;
+                    width: 1.1rem;
+                    height: 1.1rem;
+                    fill: var(--base-color);
+                }
+
+                p {
+                    margin: .5rem 0;
+                }
+            }
+
+            .markdown-alert-warning {
+                border-color: #ffc145;
+                --base-color: #cf900f;
+            }
+
+            .markdown-alert-note {
+                border-color: #73b4ff;
+                --base-color: #0969da;
+            }
+
+            .markdown-alert-tip {
+                border-color: #32ae55;
+                --base-color: #1f883d;
+            }
+
+            .markdown-alert-cation {
+                border-color: #ec4a55;
+                --base-color: #d1242f;
+            }
+
+            .markdown-alert-important {
+                border-color: #9e71f2;
+                --base-color: #8250df;
+            }
         }
     }
 </style>
