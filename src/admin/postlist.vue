@@ -37,6 +37,16 @@
             </div>
         </div>
 
+        <!-- 排序方式 -->
+        <div class="sort-by">
+            <Autofill 
+                v-model="sortBy"
+                :options="['创建日期', '创建日期(反向)', '标题', '标题(反向)', '无']"
+                placeholder="排序方式"
+                @select="sortBy = $event as any"
+            />
+        </div>
+
         <div v-for="post in filteredPosts" :key="post.name" class="post-item" @click="toggleDetails(post.name, post)"
             @dblclick="emit('navigate', post)">
             <div class="post-header">
@@ -87,7 +97,9 @@
     const searchQuery = ref('')
     const selectedCategory = ref<string | null>(null)
     const selectedTags = ref<string[]>([])
-    const tagQuery = ref('')
+    const tagQuery = ref('');
+    // XXX: 使用中文作为sort类型不优雅，后续改进
+    const sortBy = ref<'创建日期' | '创建日期(反向)' | '标题' | '标题(反向)' | '无'>('无');
     const dateRange = ref<[Date | null, Date | null]>([null, null])
 
     // 提取所有分类
@@ -98,7 +110,7 @@
 
     // 筛选后的文章列表
     const filteredPosts = computed(() => {
-        return posts.filter(post => {
+        const post_sorted = posts.filter(post => {
             // 标题搜索
             if(searchQuery.value && !post.title.toLowerCase().includes(searchQuery.value.toLowerCase())) {
                 return false
@@ -121,6 +133,26 @@
             }
             return true
         })
+        if(sortBy.value != '无'){
+            let sortFn: (a: IPost, b: IPost) => number;
+            switch(sortBy.value){
+                case '创建日期':
+                    sortFn = (a, b) => a.created - b.created;
+                break;
+                case '创建日期(反向)':
+                    sortFn = (a, b) => b.created - a.created;
+                break;
+                case '标题':
+                    sortFn = (a, b) => a.title.localeCompare(b.title);
+                break;
+                case '标题(反向)':
+                    sortFn = (a, b) => b.title.localeCompare(a.title);
+                break;
+            }
+            return post_sorted.sort(sortFn)
+        }else{
+            return post_sorted;
+        }
     })
 
     const handleDelete = (postName: string) => {
@@ -156,7 +188,6 @@
     }
 
     .filter-controls {
-        margin-bottom: 2rem;
         padding: 1.5rem;
         background-color: #f8f9fa;
         border-radius: 0.8rem;
@@ -214,6 +245,17 @@
 
     .delete-btn:hover {
         background-color: #ffcdd2;
+    }
+
+    .sort-by {
+        margin-bottom: 1rem;
+    }
+
+    .sort-by > div {
+        float: right;
+        background: #fbfbfb;
+        padding: .5rem 1rem;
+        border-radius: .75rem;
     }
 
     .post-item {

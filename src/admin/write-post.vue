@@ -104,6 +104,7 @@
         update_post(post, muya.getMarkdown());
         alert('保存成功');
         el('save');
+        modified.value = false;
     }
 
     const REPManager = {

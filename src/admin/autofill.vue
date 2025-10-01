@@ -1,7 +1,7 @@
 <template>
     <div class="autocomplete-container">
         <div class="search-box">
-            <input v-model="searchQuery" type="text" class="search-input" placeholder="请输入关键词..." @focus="showSuggestions = true"
+            <input v-model="searchQuery" type="text" class="search-input" :placeholder="placeholder" @focus="showSuggestions = true"
                 @blur="handleBlur" @keydown.down="moveDown" @keydown.up="moveUp" @keydown.enter="selectItem" />
         </div>
 
@@ -45,6 +45,10 @@
         clearAfterSelect: {
             type: Boolean,
             default: false
+        },
+        placeholder: {
+            type: String,
+            default: '请输入关键词...'
         }
     })
 
