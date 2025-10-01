@@ -33,7 +33,7 @@ jobs:
     - run: sh utils/post_build.sh
     - run: tar -zcvf release.tgz dist/
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: www.tgz
         path: release.tgz
