@@ -43,9 +43,8 @@
 
 <script setup lang="ts">
 import { markRaw, reactive, ref } from 'vue'
-import { config } from '../../package.json';
-import { RemoteFile } from './driver';
 import { is_image } from '../utils/define';
+import { driver } from './driver';
 
 interface UploadFile {
     id: string
@@ -146,25 +145,14 @@ async function uploadCorutine() {
             file.status = 'uploading';
             file.progress = 0;
 
-            const date = new Date()
-            const basePath = `${config.static_dir}/${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`.replace('//', '/');
-            const fname = Math.floor(Math.random() * 1e10) + Math.floor(Date.now() / 1e6);
-
             try{
-                const path = `${basePath}/${fname}.${file.file.name.split('.').pop()}`;
-                // await RemoteFile.__mkdir(basePath);
-                await RemoteFile.__put_with_progress(
-                    path,
-                    file.file,
-                    (loaded, total) => {
-                        file.progress = loaded / total * 100;
-                    }
-                );
+                file.fullPath = await driver.upload_attachment(file.file, (loaded, total) => {
+                    file.progress = loaded / total * 100;
+                });
                 file.status = 'success';
                 delete file.file;   // free memory
 
-                file.fullPath = path;
-                $emit('upload', path, file.name, file.size);
+                $emit('upload', file.fullPath, file.name, file.size);
             }catch(e){
                 console.error(e);
                 file.status = 'error';

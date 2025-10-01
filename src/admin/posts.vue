@@ -3,7 +3,7 @@
     import { Post } from '../utils/post';
     import Postlist from './postlist.vue';
     import { useRouter } from 'vue-router';
-import { delete_post } from './driver';
+import { driver } from './driver';
 
     const $route = useRouter();
     function goto(post: IPost){
@@ -18,7 +18,7 @@ import { delete_post } from './driver';
     function delPost(postName: string){
         const post = Post.get(postName);
         if(!post) throw new Error('Post not found');
-        delete_post(post).catch(e => {
+        driver.delete_post(post).catch(e => {
             console.error(e);
             alert('删除失败')
         });

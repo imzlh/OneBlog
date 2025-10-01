@@ -184,6 +184,11 @@ const main_config = {
         page: '/:path(.+)'
     },
 
+    img_cdn: {
+        from: '',
+        to: ''
+    },
+
     /**
      * 仅用于admin后台，base绝对路径，需要WebDAV PUT方法支持
      */

@@ -317,6 +317,12 @@ export const __init = async () => {
     // 自定义
     renderer = new Renderer();
     renderer.html = html => html.raw;
+    renderer.image = ({href, title, text}) => {
+        if(href.startsWith(CONFIG.img_cdn.from)){
+            href = href.replace(CONFIG.img_cdn.from, CONFIG.img_cdn.to);
+        }
+        return `<img src="${href}" alt="${text}" title="${title}">`;
+    }
 }
 
 export const parseMd = (content: string) => parse(content, {

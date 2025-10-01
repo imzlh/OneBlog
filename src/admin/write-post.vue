@@ -4,11 +4,11 @@
     import { onMounted, onUnmounted, reactive, ref } from 'vue';
     import { Post } from '../utils/post';
     import { useRoute, useRouter } from 'vue-router';
-    import { RemoteFile, update_post } from './driver';
     import Autofill from './autofill.vue';
     import Filelist from './filelist.vue';
     import { config } from '../../package.json';
     import Loading from './loading.vue';
+import { driver } from './driver';
 
     const container = ref<HTMLElement>(),
         CFG = reactive({
@@ -100,7 +100,7 @@
             return;
         }
         
-        update_post(post, muya.getMarkdown());
+        driver.update_post(post, muya.getMarkdown());
         alert('保存成功');
         el('save');
         modified.value = false;
@@ -216,7 +216,7 @@
 
     async function delFile(file: string, name: string){
         try{
-            await RemoteFile.__delete(file);
+            await driver.del(file);
         }catch(e){
             alert('删除文件 ' + name + ' 失败');
             console.log('del file: ', e);

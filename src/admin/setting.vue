@@ -155,7 +155,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue'
 import { CONFIG as _config } from '../main'
-import { update_config } from './driver';
+import { driver } from './driver';
 const CONFIG = reactive(_config);
 
 interface DefaultThumb {
@@ -320,7 +320,7 @@ const handleSave = async () => {
     isSaving.value = true
     try {
         Object.assign(_config, formData);
-        await update_config();
+        await driver.update_config();
         alert('保存成功!');
 
         emit('save', formData)
