@@ -9,8 +9,9 @@ permissions:
   id-token: write
 
 on:
-  tag:
-    - v*
+  push:
+    tags:
+      - 'v*' # Trigger on version tags like v1.0.0
 
 jobs:
   build:
