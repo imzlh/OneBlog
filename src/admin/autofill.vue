@@ -49,11 +49,16 @@
         placeholder: {
             type: String,
             default: '请输入关键词...'
+        },
+        allowCreate: {
+            type: Boolean,
+            default: false
         }
     })
 
     const emit = defineEmits<{
-        (e: 'select', item: string | Record<string, any>): void
+        (e: 'select', item: string | Record<string, any>): void,
+        (e: 'create', item: string | Record<string, any>): void
     }>()
 
     const searchQuery = ref<string>('')
@@ -103,11 +108,23 @@
         }
     }
 
-    function selectItem(item?: string | Record<string, any>): void {
+    function selectItem(item?: string | Record<string, any> | KeyboardEvent): void {
         const selected = item || filteredOptions.value[highlightedIndex.value]
         if (selected) {
-            searchQuery.value = String(selected)
-            emit('select', selected)
+            if (selected instanceof KeyboardEvent){
+                // no suggetion selected, create a new one
+                if (props.allowCreate){
+                    emit('create', searchQuery.value);
+                    emit('select', searchQuery.value);
+                } else {
+                    showSuggestions.value = false;
+                    return;
+                }
+            } else {
+                searchQuery.value = String(selected)
+                emit('select', selected)
+            }
+            
             showSuggestions.value = false
             if(props.clearAfterSelect) searchQuery.value = ''
         }

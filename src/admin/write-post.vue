@@ -4,7 +4,7 @@
     import { onMounted, onUnmounted, reactive, ref } from 'vue';
     import { Post } from '../utils/post';
     import { useRoute, useRouter } from 'vue-router';
-    import { update_post } from './driver';
+    import { RemoteFile, update_post } from './driver';
     import Autofill from './autofill.vue';
     import Filelist from './filelist.vue';
     import { config } from '../../package.json';
@@ -214,6 +214,15 @@
         muya.focus();
     }
 
+    async function delFile(file: string, name: string){
+        try{
+            await RemoteFile.__delete(file);
+        }catch(e){
+            alert('删除文件 ' + name + ' 失败');
+            console.log('del file: ', e);
+        }
+    }
+
     function mutexSelect(type: keyof typeof MORE){
         for(const key in MORE) 
             // @ts-ignore
@@ -246,12 +255,14 @@
             </div>
             <div class="tags" v-show="MORE.tag">
                 <div class="tag" v-for="(tag, index) in post.info.tags" :key="index">{{ tag }}</div>
-                <Autofill :options="Post.get_all_tags()" @select="post.info.tags.push($event as string)" :clear-after-select="true" />
+                <Autofill :options="Post.get_all_tags()" :allow-create="true"
+                    @select="post.info.tags.push($event as string)" :clear-after-select="true" 
+                />
             </div>
-            <Autofill type="text" class="category" v-show="MORE.category"
+            <Autofill type="text" class="category" v-show="MORE.category" :allow-create="true"
                 :options="Post.get_all_categories()" @select="post.info.category = $event as string" />
             <div class="files" v-show="MORE.attachment">
-                <Filelist @upload="plug" @insert="plug"/>
+                <Filelist @upload="plug" @insert="plug" @delete="delFile"/>
             </div>
         </div>
 

@@ -206,6 +206,10 @@ export class Post{
     }
 
     constructor(private $post: IPost, private $create = false){}
+
+    add_attachment(file: File){
+        this.$post.attachment.push(file.name);
+    }
     
     async get_md(){
         if(this.$create) return '';
@@ -257,7 +261,7 @@ export class Post{
         this.$post = reactive(this.$post);
     }
 
-    save(){
+    save(outline: string){
         if(this.$create){
             cache.post.push(this.$post);
             this.$post.created = Date.now();
@@ -267,6 +271,7 @@ export class Post{
         }else{
             this.$post.modified = Date.now();
         }
+        this.$post.outline = outline;
     }
 
     del(){

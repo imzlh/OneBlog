@@ -90,15 +90,18 @@ export async function update_config() {
 
 export async function update_post(post: Post, contents: string) {
     // precheck
-    post.save();
+    post.save(contents.substring(100));
     // write to file
-    const content = `---
-title: ${post.info.title}
+    const content = `title: ${post.info.title}
 created: ${new Date(post.info.created).toDateString()}
 modified: ${new Date(post.info.modified).toDateString()}
 tags: ${post.info.tags.join(',')}
 category: ${post.info.category}
+order: ${post.info.order}
+
 ---
+
+<!-- edited by OneBlog Admin -->
 ${contents}
 `;
     await RemoteFile.__put(config.post_dir + post.info.name + '.md', content);

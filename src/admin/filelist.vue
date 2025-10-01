@@ -13,6 +13,7 @@
                 <div class="drag-main">
                     <p>拖拽文件到此处或</p>
                     <button class="upload-btn" @click="triggerFileInput">选择文件</button>
+                    <button class="upload-btn" @click="triggerPaste" v-if="hasClipboardData">从剪切板粘贴</button>
                     <input type="file" ref="fileInput" multiple @change="handleFileChange" style="display: none" />
                 </div>
             </div>
@@ -44,11 +45,13 @@
 import { markRaw, reactive, ref } from 'vue'
 import { config } from '../../package.json';
 import { RemoteFile } from './driver';
+import { is_image } from '../utils/define';
 
 interface UploadFile {
     id: string
     file?: File
     name: string
+    rawName: string
     size: number
     status: 'pending' | 'uploading' | 'success' | 'error'
     progress?: number,
@@ -58,14 +61,54 @@ interface UploadFile {
 const $emit = defineEmits<{
         upload: [string, string, number],
         insert: [string, string],
+        delete: [string, string]
     }>(),
     fileList = reactive([] as UploadFile[]);
 const isDragover = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
+// 实用工具：压缩图片
+async function compressImage(input: File, quality = .8, scale = 1): Promise<File> {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = URL.createObjectURL(input);
+    await new Promise(rs => img.onload = rs);
+    URL.revokeObjectURL(img.src);
+    canvas.width = scale * img.width;
+    canvas.height = scale * img.height;
+    ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+    let data, extension;
+    try{
+        data = await new Promise<Blob | null>(rs => canvas.toBlob(rs, 'image/webp', quality));
+        if(!data) throw 0;
+        extension = 'webp';
+    }catch{
+        data = await new Promise<Blob | null>(rs => canvas.toBlob(rs, 'image/jpeg', quality));
+        extension = 'png';
+    }
+    if(!data) throw new Error('compressImage failed');
+    const compressed = new File([data], `${input.name.replace(/\.\w+$/, '')}.${extension}`, {type: 'image/' + extension});
+    return compressed;
+}
+
 // 触发文件选择
 const triggerFileInput = () => {
     fileInput.value?.click()
+}
+
+const hasClipboardData = !!navigator.clipboard;
+const triggerPaste = () => {
+    if (hasClipboardData) {
+        navigator.clipboard.read().then(async it => {
+            const item = it[0];
+            if (!item.types.includes('text')){
+                // upload
+                let guessedExt = (item.types[0] ?? 'text/plain').split('/')[1];
+                addFiles([new File([await item.getType(item.types[0])], crypto.randomUUID() + '.' + guessedExt)]);
+            }
+        });
+    }
 }
 
 // 处理拖拽进入
@@ -134,16 +177,23 @@ async function uploadCorutine() {
 // 添加文件到列表
 let uploadingState = false;
 const addFiles = (files: File[]) => {
-    files.forEach(file => {
+    files.forEach(async file => {
         // 检查是否已存在同名文件
-        const exists = fileList.some(f => f.name === file.name)
+        const exists = fileList.some(f => f.rawName === file.name)
         if (!exists) {
+            // compress image
+            const rawName = file.name;
+            if (file.type.startsWith('image/') || is_image(file.name)){
+                file = await compressImage(file);
+            }
+
             fileList.push({
                 id: generateFileId(file),
                 file: markRaw(file),
                 name: file.name,
                 size: file.size,
-                status: 'pending'
+                status: 'pending',
+                rawName
             });
 
             if(!uploadingState) uploadCorutine();
@@ -158,7 +208,10 @@ const generateFileId = (file: File): string => {
 
 // 移除文件
 const removeFile = (index: number) => {
+    const el = fileList[index];
     fileList.splice(index, 1)
+    if(el.fullPath && el.status === 'success')
+        $emit('delete', el.fullPath, el.name);
 }
 
 // 格式化文件大小
@@ -176,6 +229,10 @@ const formatFileSize = (bytes: number): string => {
     margin: 0 .75rem;
     background-color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .dropzone {
@@ -212,6 +269,7 @@ const formatFileSize = (bytes: number): string => {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
+    margin: .25rem .35rem;
 }
 
 .upload-btn:hover {
@@ -222,6 +280,12 @@ const formatFileSize = (bytes: number): string => {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     overflow: hidden;
+
+    max-width: 55%;
+    height: 30vh;
+    max-height: 20rem;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .file-item {
@@ -241,6 +305,11 @@ const formatFileSize = (bytes: number): string => {
     display: flex;
     align-items: center;
     gap: 1rem;
+    overflow: hidden;
+}
+
+.file-info > * {
+    flex-shrink: 1;
 }
 
 .file-name {
@@ -248,6 +317,7 @@ const formatFileSize = (bytes: number): string => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 55%;
 }
 
 .file-size {
