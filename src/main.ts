@@ -135,18 +135,18 @@ const main_config = {
         /**
          * API地址
          */
-        url: 'https://api.oick.cn/dutang/api.php',
+        url: 'https://v1.hitokoto.cn',
         /**
          * API返回数据类型
          * `text`: 纯文本
          * `json`: JSON格式
          * `xml`: XML格式
          */
-        type: 'text' as 'text' | 'json' | 'xml',
+        type: 'json' as 'text' | 'json' | 'xml',
         /**
          * 如果返回JSON，需要指定键名为数据
          */
-        key: '',    // JSON?
+        key: 'hitokoto',    // JSON?
         /**
          * 如果返回XML，需要指定标签选择器
          * 选择器的语法与 CSS选择器 或者说jQuery选择器 相同

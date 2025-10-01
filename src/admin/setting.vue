@@ -80,6 +80,30 @@
                         <input v-model="formData.loading_background" type="text" class="form-input"
                             placeholder="图片URL或颜色值" />
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label">一言API URL</label>
+                        <input type="text" v-model="formData.api_soup!.url" class="form-input"
+                            placeholder="网页URL，推荐 https://v1.hitokoto.cn">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">一言API返回</label>
+                        <select v-model="formData.api_soup!.type" class="form-select">
+                            <option value="xml">XML</option>
+                            <option value="json">JSON</option>
+                            <option value="text">纯文本</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width" v-if="formData.api_soup!.type != 'text'">
+                        <label class="form-label">
+                            一言API 
+                            <template v-if="formData.api_soup!.type === 'json'">键名</template>
+                            <template v-else-if="formData.api_soup!.type === 'xml'">选择器</template>
+                        </label>
+                        <input type="text" v-model="sentenceAPIKeyOrSelector" class="form-input"
+                            placeholder="获取 API 返回内容的路径">
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">默认缩略图类型</label>
                         <select v-model="thumbType" class="form-select" @change="updateThumbConfig">
@@ -139,6 +163,16 @@
                         <label class="form-label">Admin WebDAV路径</label>
                         <input v-model="formData.davroot" type="text" class="form-input" placeholder="/webdav/" />
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">图片资源替换自</label>
+                        <input v-model="formData.img_cdn!.from" type="text" class="form-input"
+                            placeholder="匹配图片资源开头，如 https://blog.com/img/" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">图替换为</label>
+                        <input v-model="formData.img_cdn!.to" type="text" class="form-input"
+                            placeholder="替换为的图片URL，如 https://cdn.com/" />
+                    </div>
                 </div>
             </section>
 
@@ -153,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { CONFIG as _config } from '../main'
 import { driver } from './driver';
 const CONFIG = reactive(_config);
@@ -187,8 +221,10 @@ const formData = reactive<BlogConfig>({
     post_per_page: 10,
     loading_background: '',
     default_thumb: { url: '', type: 'single', range: [], pad: 0 },
+    api_soup: { url: '', type: 'text', key: '', selector: '' },
+    img_cdn: { from: '', to: '' },
     icp: '',
-    davroot: '',
+    davroot: ''
 })
 
 // 状态
@@ -204,6 +240,12 @@ const seqConfig = reactive({
     url: 'thumb/%u.webp'
 })
 const fixedUrls = ref<string[]>([''])
+
+// 一言API
+const sentenceAPIKeyOrSelector = computed({
+        get: () => CONFIG.api_soup.type == 'json' ? CONFIG.api_soup.key : CONFIG.api_soup.selector,
+        set: v => CONFIG.api_soup.type == 'json' ? (CONFIG.api_soup.key = v) : (CONFIG.api_soup.selector = v)
+    })
 
 // 工具函数
 const getFieldLabel = (field: string): string => {
@@ -262,6 +304,7 @@ const updateFixedThumb = () => {
         url: fixedUrls.value.filter(url => url.trim())
     }
 }
+
 
 const addFixedUrl = () => {
     fixedUrls.value.push('')
