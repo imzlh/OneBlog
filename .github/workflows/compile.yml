@@ -32,16 +32,11 @@ jobs:
     - run: npm run build --if-present
     - run: sh utils/post_build.sh
     - run: tar -zcvf release.tgz dist/
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: release.tgz
-        release_name: 'latest'
-        asset_name: vlist5_latest.tgz
-        tag: ${{ github.ref }}
-        overwrite: true
-        body: "这是已经打包完成的版本，解压后开箱即用"
+        name: www.tgz
+        path: release.tgz
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
       with:
