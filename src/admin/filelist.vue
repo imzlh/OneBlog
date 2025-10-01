@@ -21,7 +21,7 @@
         <!-- 文件列表 -->
         <div class="file-list" v-if="fileList.length > 0">
             <div v-for="(file, index) in fileList" :key="file.id" class="file-item">
-                <div class="file-info">
+                <div class="file-info" @dblclick="file.fullPath && $emit('insert', file.fullPath, file.name)">
                     <span class="file-name">{{ file.name }}</span>
                     <span class="file-size">{{ formatFileSize(file.size) }}</span>
                     <span class="file-status">{{ file.status }}</span>
@@ -47,15 +47,17 @@ import { RemoteFile } from './driver';
 
 interface UploadFile {
     id: string
-    file: File
+    file?: File
     name: string
     size: number
     status: 'pending' | 'uploading' | 'success' | 'error'
-    progress?: number
+    progress?: number,
+    fullPath?: string
 }
 
 const $emit = defineEmits<{
-        upload: [string, string, number]
+        upload: [string, string, number],
+        insert: [string, string],
     }>(),
     fileList = reactive([] as UploadFile[]);
 const isDragover = ref(false)
@@ -97,7 +99,7 @@ async function uploadCorutine() {
     if(uploadingState) throw new Error('uploading');
     uploadingState = true;
     for(const file of fileList){
-        if(file.status == 'pending'){
+        if(file.status == 'pending' && file.file){
             file.status = 'uploading';
             file.progress = 0;
 
@@ -116,7 +118,9 @@ async function uploadCorutine() {
                     }
                 );
                 file.status = 'success';
+                delete file.file;   // free memory
 
+                file.fullPath = path;
                 $emit('upload', path, file.name, file.size);
             }catch(e){
                 console.error(e);

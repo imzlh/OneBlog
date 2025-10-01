@@ -200,13 +200,17 @@
         let prefix = '';
         if(img.includes(arrayAtPoly(file.split('.')).toLowerCase()))
             prefix = '!';
-        if(cur) muya.editor.activeContentBlock.text =
-            data.substring(0, cur.start.offset) +
-            prefix + `[ ${data.substring(cur.start.offset, cur.end.offset +1)} ](${encodeURI(fpath)})` +
-            data.substring(cur.end.offset +1);
-        else muya.editor.activeContentBlock.text =
-            prefix + `[ ${file} ](${encodeURI(fpath)})`;
-        muya.editor.activeContentBlock.focusHandler();
+        try{
+            if(cur) muya.editor.activeContentBlock.text =
+                data.substring(0, cur.start.offset) +
+                prefix + `[ ${data.substring(cur.start.offset, cur.end.offset +1)} ](${encodeURI(fpath)})` +
+                data.substring(cur.end.offset +1);
+            else muya.editor.activeContentBlock.text =
+                prefix + `[ ${file} ](${encodeURI(fpath)})`;
+            muya.editor.activeContentBlock.focusHandler();
+        }catch(e){
+            console.warn('Failed to insert image: ', e);
+        }
         muya.focus();
     }
 
@@ -219,8 +223,9 @@
 
     onUnmounted(() => muya && muya.destroy());
 
+    const modified = ref(false);
     const uninstall = useRouter().beforeEach(() => {
-        if(previousContent != muya!.getMarkdown()){
+        if(modified.value){
             return confirm('当前页面未保存，确定离开吗?');
         }
         return true;
@@ -231,7 +236,7 @@
 <template>
     <h1>写文章</h1>
     <Loading v-if="loading"></Loading>
-    <div class="md-root" v-show="!loading" ref="container">
+    <div class="md-root" v-show="!loading" ref="container" @keydown="modified = true">
         <div class="md-info">
             <input type="text" class="title" v-model="post.info.title" placeholder="标题">
             <div class="more">
@@ -246,7 +251,7 @@
             <Autofill type="text" class="category" v-show="MORE.category"
                 :options="Post.get_all_categories()" @select="post.info.category = $event as string" />
             <div class="files" v-show="MORE.attachment">
-                <Filelist @upload="plug" />
+                <Filelist @upload="plug" @insert="plug"/>
             </div>
         </div>
 
@@ -589,7 +594,7 @@
 
         .md-container{
             flex-grow: 1;
-            height: 100%;
+            flex-shrink: 1;
             overflow-y: auto;
             overflow-x: hidden;
         }

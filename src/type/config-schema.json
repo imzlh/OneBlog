@@ -266,6 +266,11 @@
             "type": "string",
             "description": "仅用于admin后台，base绝对路径，需要WebDAV PUT方法支持",
             "additionalProperties": true
+        },
+        "davbase": {
+            "type": "string",
+            "description": "如果你不能使用在package.json里定义的base，这里可以覆盖它",
+            "additionalProperties": true
         }
     },
     "additionalProperties": false,

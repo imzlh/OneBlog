@@ -187,7 +187,12 @@ const main_config = {
     /**
      * 仅用于admin后台，base绝对路径，需要WebDAV PUT方法支持
      */
-    davroot: ''
+    davroot: undefined as undefined | string,
+
+    /**
+     * 如果你不能使用在package.json里定义的base，这里可以覆盖它
+     */
+    davbase: undefined as undefined | string,
 };
 export { main_config as CONFIG };
 
