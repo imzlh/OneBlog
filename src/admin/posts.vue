@@ -3,6 +3,7 @@
     import { Post } from '../utils/post';
     import Postlist from './postlist.vue';
     import { useRouter } from 'vue-router';
+import { delete_post } from './driver';
 
     const $route = useRouter();
     function goto(post: IPost){
@@ -13,12 +14,23 @@
             }
         });
     }
+
+    function delPost(postName: string){
+        const post = Post.get(postName);
+        if(!post) throw new Error('Post not found');
+        delete_post(post).catch(e => {
+            console.error(e);
+            alert('删除失败')
+        });
+    }
 </script>
 
 <template>
     <div class="posts-wrapper">
         <h1>文章列表</h1>
-        <Postlist :posts="Post.get_all().array.map(i => markRaw(i.info))" @navigate="goto" />
+        <Postlist :posts="Post.get_all().array.map(i => markRaw(i.info))" @navigate="goto"
+            @delete="delPost"
+        />
     </div>
 </template>
 

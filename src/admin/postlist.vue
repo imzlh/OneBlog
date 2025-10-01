@@ -2,31 +2,33 @@
     <div class="post-list-container" tabindex="1" @blur="activePost = null">
         <!-- 筛选控件 -->
         <div class="filter-controls">
-            <div class="filter-row" style="width: 20%;">
-                <Autofill
-                    v-model="searchQuery"
-                    :options="posts.map(p => p.title)"
-                    placeholder="搜索文章标题..."
-                    @select="searchQuery = $event as string"
-                />
-            </div>
-            
-            <div class="filter-row">
-                <Autofill 
-                    v-model="selectedCategory"
-                    :options="['所有分类', ...allCategories]"
-                    placeholder="选择分类"
-                    @select="selectedCategory = $event == '所有分类' ? null : $event as string"
-                />
-            </div>
-            
-            <div class="filter-row">
-                <Autofill 
-                    v-model="tagQuery"
-                    :options="allTags"
-                    placeholder="选择标签"
-                    @select="selectedTags.includes($event as string) || selectedTags.push($event as string); tagQuery = ''"
-                />
+            <div class="filter-col">
+                <div class="filter-row" style="width: 20%;">
+                    <Autofill
+                        v-model="searchQuery"
+                        :options="posts.map(p => p.title)"
+                        placeholder="搜索文章标题..."
+                        @select="searchQuery = $event as string"
+                    />
+                </div>
+                
+                <div class="filter-row">
+                    <Autofill 
+                        v-model="selectedCategory"
+                        :options="['所有分类', ...allCategories]"
+                        placeholder="选择分类"
+                        @select="selectedCategory = $event == '所有分类' ? null : $event as string"
+                    />
+                </div>
+                
+                <div class="filter-row">
+                    <Autofill 
+                        v-model="tagQuery"
+                        :options="allTags"
+                        placeholder="选择标签"
+                        @select="selectedTags.includes($event as string) || selectedTags.push($event as string); tagQuery = ''"
+                    />
+                </div>
             </div>
 
             <div v-if="selectedTags.length" class="selected-tags">
@@ -52,7 +54,7 @@
             <div class="post-header">
                 <h3 class="post-title">{{ post.title }}</h3>
                 <div class="post-meta">
-                    <button class="delete-btn" @click.stop="handleDelete(post.name)">删除</button>
+                    <button class="delete-btn" @click.stop="handleDelete(post.name, $event)">删除</button>
                     <span class="post-date">{{ formatDate(post.created) }}</span>
                     <span v-if="post.category" class="post-category">{{ post.category }}</span>
                 </div>
@@ -60,7 +62,7 @@
 
             <transition name="slide-fade">
                 <div v-show="activePost === post.name" class="post-details">
-                    <p v-if="post.outline" class="post-outline">{{ post.outline }}</p>
+                    <p v-if="post.outline" class="post-outline">{{ post.outline }} ...</p>
                     <div v-if="post.tags && post.tags.length" class="post-tags">
                         <span v-for="tag in post.tags" :key="tag" class="tag">{{ tag }}</span>
                     </div>
@@ -155,9 +157,16 @@
         }
     })
 
-    const handleDelete = (postName: string) => {
+    const handleDelete = (postName: string, ev: Event) => {
         if(confirm('确定要删除这篇文章吗？')) {
             emit('delete', postName)
+
+            // remove element
+            let el = ev.target as HTMLElement;
+            while(!el.classList.contains('post-item')){
+                el = el.parentElement as HTMLElement;
+            }
+            el.remove();
         }
     }
 
@@ -191,6 +200,9 @@
         padding: 1.5rem;
         background-color: #f8f9fa;
         border-radius: 0.8rem;
+    }
+
+    .filter-controls .filter-col {
         display: flex;
         gap: 1.2rem;
     }

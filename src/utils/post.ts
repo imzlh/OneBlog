@@ -268,6 +268,15 @@ export class Post{
             this.$post.modified = Date.now();
         }
     }
+
+    del(){
+        if(!this.$create){
+            const idx = cache.post.findIndex(post => post.name === this.$post.name);
+            if(idx >= 0) cache.post.splice(idx, 1);
+        }
+        this.$create = false;
+        console.log('Post deleted:', this.$post.name);
+    }
 }
 
 // 初始化post

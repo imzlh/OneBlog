@@ -18,6 +18,16 @@ export class RemoteFile{
         return res;
     }
 
+    static async __delete(f: string){
+        this.__check_enabled();
+        const url = `${CONFIG.davroot}${CONFIG.davbase ?? config.base}${f}`;
+        const res = await fetch(url, {
+            method: 'DELETE'
+        });
+        if(!res.ok) throw new Error(`Failed to delete ${url}: ${res.statusText}`);
+        return res;
+    }
+
     static async __put(f: string, data: XMLHttpRequestBodyInit){
         this.__check_enabled();
         const url = `${CONFIG.davroot}${CONFIG.davbase ?? config.base}${f}`;
@@ -96,4 +106,17 @@ ${contents}
     // repack
     const str = await exportIndex();
     await RemoteFile.__put(config.index, str);
+}
+
+export async function delete_post(post: Post) {
+    post.del();
+    const rpath = config.post_dir + post.info.name + '.md';
+    const ctx = await RemoteFile.__get(rpath).then(r => r.text());
+    await RemoteFile.__delete(rpath);
+
+    // repack
+    const str = await exportIndex();
+    await RemoteFile.__put(config.index, str);
+
+    console.warn('Post deleted:', post.info, '\ndeleted content:\n', ctx);
 }
