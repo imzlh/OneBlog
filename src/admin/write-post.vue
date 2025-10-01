@@ -40,7 +40,6 @@
         }
     }
 
-    let previousContent = '';
     onMounted(async function(){
         const text = await post.get_html(),
             box = document.createElement('div');
@@ -91,7 +90,7 @@
             "tabSize": 4
         })).init();
         loading.value = false;
-        muya.setContent(previousContent = await post.get_md());
+        muya.setContent(await post.get_md());
     });
 
     function save(){

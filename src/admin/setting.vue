@@ -115,7 +115,7 @@
                     <div class="form-group full-width" v-if="thumbType === 'fixed'">
                         <label class="form-label">缩略图列表</label>
                         <div class="url-list">
-                            <div v-for="(url, index) in fixedUrls" :key="index" class="url-item">
+                            <div v-for="(_url, index) in fixedUrls" :key="index" class="url-item">
                                 <input v-model="fixedUrls[index]" type="text" class="form-input" placeholder="图片URL"
                                     @input="updateFixedThumb" />
                                 <button type="button" @click="removeFixedUrl(index)" class="btn-remove"
