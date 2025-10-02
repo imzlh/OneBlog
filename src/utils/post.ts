@@ -314,6 +314,25 @@ export const __init = async () => {
     //     }
     // }));
 
+    // 拷贝code
+    function copyCode(el: HTMLPreElement){
+        const code = el.getElementsByTagName('code')[0].textContent;
+        const msg = el.getElementsByClassName('copy-btn')[0];
+        if(code)
+            navigator.clipboard.writeText(code).then(() => {
+                
+                msg.textContent = '复制成功';
+                setTimeout(() => msg.textContent = '复制' , 1000);
+            }).catch(() => {
+                msg.textContent = '复制失败';
+                setTimeout(() => msg.textContent = '复制', 1000);
+            });
+    }
+    // @ts-ignore
+    globalThis.copyCode = copyCode;
+    const commonCodeCopy = `<button class="copy-btn" onclick="copyCode(this.parentElement)">复制</button>`
+    const testElement = document.createElement('div');
+
     // 自定义
     renderer = new Renderer();
     renderer.html = html => html.raw;
@@ -322,6 +341,17 @@ export const __init = async () => {
             href = href.replace(CONFIG.img_cdn.from, CONFIG.img_cdn.to);
         }
         return `<img src="${href}" alt="${text}" title="${title}">`;
+    }
+    renderer.code = ({text, lang, escaped}) => {
+        if(!escaped){
+            testElement.innerText = text;
+            text = testElement.innerHTML;
+        }
+        if(lang){
+            return `<pre>${commonCodeCopy}<code class="hljs language-${lang}">${text}</code></pre>`;
+        }else{
+            return `<pre>${commonCodeCopy}<code>${text}</code></pre>`;
+        }
     }
 }
 

@@ -28,6 +28,11 @@
                         <input v-model="formData.format_time" type="text" class="form-input"
                             placeholder="Y-m-d H:i:s" />
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">网站图标</label>
+                        <input v-model="formData.favicon" type="text" class="form-input"
+                            placeholder="图片URL或颜色值" />
+                    </div>
                 </div>
             </section>
 

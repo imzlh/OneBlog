@@ -12,6 +12,11 @@
             "type": "string",
             "description": "站点描述"
         },
+        "favicon": {
+            "type": "string",
+            "description": "显示的站点图标，在顶部横幅和favicon显示",
+            "default": "/favicon.webp"
+        },
         "keywords": {
             "type": "string",
             "description": "站点关键词，多个关键词用英文逗号(,)分隔"

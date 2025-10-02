@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { CONFIG } from './main';
+    import { CONFIG, get_file } from './main';
     import { onMounted, ref } from 'vue';
     import Footer from './components/footer.vue';
     import { useRouter } from 'vue-router';
@@ -46,9 +46,10 @@
 <template>
     <div class="__header" :hide="hide_main">
         <div class="container">
-            <RouterLink class="title"
-                :to="{ name: 'home' }"
-            >{{ CONFIG.title }}</RouterLink>
+            <RouterLink class="title" :to="{ name: 'home' }">
+                <img v-if="CONFIG.favicon" :src="get_file(CONFIG.favicon).href" :alt="CONFIG.title">
+                {{ CONFIG.title }}
+            </RouterLink>
             <nav>
                 <router-link to="/">首页</router-link>
                 <router-link :to="{ name: 'search', params: { keyword: ' ' } }">搜索</router-link>
@@ -74,6 +75,10 @@
 
         > *{
             box-sizing: border-box;
+        }
+
+        a {
+            outline: none;
         }
     }
 
@@ -106,6 +111,13 @@
                 display: inline-block;
                 color: rgb(53, 50, 50);
                 text-decoration: none;
+
+                > img {
+                    width: 1em;
+                    height: 1em;
+                    transform: scale(1.75) translateY(.05em);
+                    margin-right: .35em;
+                }
             }
 
             > nav{

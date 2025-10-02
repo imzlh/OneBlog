@@ -45,6 +45,7 @@ export const show_error = (code: number, reason: string, handle?: () => any) =>{
 }
 
 // 读取主配置
+// 详情请参考`type/config-schema.json`
 const main_config = {
     /**
      * 站点名称
@@ -59,6 +60,10 @@ const main_config = {
      * 多个关键词用英文逗号(,)分隔
      */
     keywords: 'izBlog, blog, 博客',
+    /**
+     * 站点图标
+     */
+    favicon: 'favicon.webp',
 
     /**
      * 文章时间格式化方式
@@ -218,6 +223,12 @@ export { main_config as CONFIG };
     meta2.name = 'description';
     meta2.content = main_config.description;
     document.head.appendChild(meta2);
+
+    // 添加favicon
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.href = get_file(main_config.favicon).href;
+    document.head.appendChild(link);
 
     // 解析路由
     const routeCfg: RouteRecordRaw[] = [];

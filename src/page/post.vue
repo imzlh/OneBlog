@@ -6,7 +6,6 @@
     import { color_by_char } from '../utils/color';
     import CommentCard, { type IRawComment } from '../components/comment-card.vue';
     import { vJavaScript } from '../utils/vue';
-    import { vCodeHelper } from '../utils/code';
 
     const route = useRoute(),
         router = useRouter(),
@@ -65,7 +64,7 @@
         <hr>
 
         <!-- 文章内容 -->
-        <div class="content" v-html="$content" v-java-script v-code-helper></div>
+        <div class="content" v-html="$content" v-java-script></div>
         <div class="footer" v-html="CONFIG.footer_html"></div>
 
         <!-- 评论区 -->
@@ -188,18 +187,19 @@
                 max-height: 80vh;
                 overflow-y: auto;
 
-                >code{
+                > code{
                     padding: .6rem 1rem;
                     line-height: 2;
                     word-break: break-all;
                     display: block;
                 }
-                >button{
-                    position: absolute;
-                    top: .5rem;
-                    right: .5rem;
-                    padding: .25rem .5rem;
-                    font-size: .85rem;
+                button{
+                    position: sticky;
+                    top: 0;
+                    left: calc(100% - 4rem);
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.85rem;
+                    display: block;
                 }
             }
             a {
