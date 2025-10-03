@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-    import '@muyajs/core/lib/style.css';
     import type { Search } from '@muyajs/core/lib/types/search/index.js';
     import { onMounted, onUnmounted, reactive, ref, useTemplateRef } from 'vue';
     import { Post } from '../utils/post';
@@ -45,6 +44,8 @@
             box = document.createElement('div');
         box.classList.add('md-container');
         (container.value as HTMLElement).append(box);
+
+        await import('@muyajs/core/lib/style.css');
 
         const {
             CodeBlockLanguageSelector,
