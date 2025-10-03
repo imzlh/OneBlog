@@ -3,7 +3,7 @@
  */
 import { config } from '../../package.json';
 import { CONFIG } from '../main';
-import { exportIndex, Post } from '../utils/post';
+import { exportIndex, parseMd, Post } from '../utils/post';
 
 class RemoteFile {
     static __check_enabled() {
@@ -91,7 +91,10 @@ export namespace driver {
 
     export async function update_post(post: Post, contents: string) {
         // precheck
-        post.save(contents.substring(100));
+        const html = await parseMd(contents.replace(/<!--.+?-->/g, ''));
+        const dom = new DOMParser().parseFromString(html, 'text/html');
+        const info = dom.body.innerText.replace(/\s+/g,'').trim();
+        post.save(info.substring(0, 150));
         // write to file
         const content = `title: ${post.info.title}
 created: ${new Date(post.info.created).toDateString()}

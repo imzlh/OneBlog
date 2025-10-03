@@ -15,7 +15,10 @@ import { reactive } from "vue";
 
 export function get_thumb(post: IPost){
     if(post.attachment.length > 0)
-        return post.attachment[post.attachment.findIndex(is_image)];
+        return new URL(
+            post.attachment[post.attachment.findIndex(is_image)],
+            get_file(config.base).href
+        ).href;
     // 解析
     const $t = CONFIG.default_thumb;
     const throwError = (em: string) => {

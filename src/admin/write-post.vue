@@ -1,14 +1,14 @@
 <script lang="ts" setup>
     import '@muyajs/core/lib/style.css';
     import type { Search } from '@muyajs/core/lib/types/search/index.js';
-    import { onMounted, onUnmounted, reactive, ref } from 'vue';
+    import { onMounted, onUnmounted, reactive, ref, useTemplateRef } from 'vue';
     import { Post } from '../utils/post';
     import { useRoute, useRouter } from 'vue-router';
     import Autofill from './autofill.vue';
     import Filelist from './filelist.vue';
     import { config } from '../../package.json';
     import Loading from './loading.vue';
-import { driver } from './driver';
+    import { driver } from './driver';
 
     const container = ref<HTMLElement>(),
         CFG = reactive({
@@ -30,7 +30,7 @@ import { driver } from './driver';
         post = typeof _pid == 'string' ? (Post.get(_pid) ?? Post.new()) : Post.new();
     post.set_reactive();
     let muya: import('@muyajs/core').Muya | undefined;
-    const loading = ref(true);
+    const loading = ref(true), hideInfo = ref(false), flist = useTemplateRef('flist');
 
     const reqFullscreen = () => {
         if(document.fullscreenElement){
@@ -100,6 +100,7 @@ import { driver } from './driver';
             return;
         }
         
+        post.info.attachment = flist.value!.getFiles();
         driver.update_post(post, muya.getMarkdown());
         alert('保存成功');
         el('save');
@@ -246,7 +247,7 @@ import { driver } from './driver';
     <h1>写文章</h1>
     <Loading v-if="loading"></Loading>
     <div class="md-root" v-show="!loading" ref="container" @keydown="modified = true">
-        <div class="md-info">
+        <div class="md-info" v-show="!hideInfo">
             <input type="text" class="title" v-model="post.info.title" placeholder="标题">
             <div class="more">
                 <div @click="mutexSelect('tag')" :selected="MORE.tag">标签</div>
@@ -262,9 +263,11 @@ import { driver } from './driver';
             <Autofill type="text" class="category" v-show="MORE.category" :allow-create="true"
                 :options="Post.get_all_categories()" @select="post.info.category = $event as string" />
             <div class="files" v-show="MORE.attachment">
-                <Filelist @upload="plug" @insert="plug" @delete="delFile"/>
+                <Filelist :initial-files="post.info.attachment" @upload="plug" @insert="plug" @delete="delFile" ref="flist"/>
             </div>
         </div>
+
+        <div class="hide-mdinfo" :vs-icon="hideInfo ? 'right' : 'left'" button="large" @click="hideInfo = !hideInfo"></div>
 
         <div class="md-tools">
             <div class="search" v-show="CFG.search || CFG.replace">
@@ -404,6 +407,34 @@ import { driver } from './driver';
 
         display: flex;
         flex-direction: column;
+
+        @media screen and (min-width: 50rem) {
+            display: flex;
+            flex-direction: row;
+            gap: .35rem;
+
+            > .md-info{
+                width: 40%;
+                min-width: 28rem;
+                background-color: #f5f5f5;
+            }
+
+            > .hide-mdinfo {
+                display: block !important;
+                transform: scale(1.25);
+            }
+        }
+
+        > .hide-mdinfo{
+            display: none;
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            z-index: 10;
+            border-radius: 2rem;
+            background-color: white;
+            box-shadow: 0 .1rem .5rem #d7d7d7;
+        }
 
         @mixin btn_div() {
             padding: .3rem;

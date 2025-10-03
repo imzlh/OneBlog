@@ -47,8 +47,9 @@
     <div class="__header" :hide="hide_main">
         <div class="container">
             <RouterLink class="title" :to="{ name: 'home' }">
-                <img v-if="CONFIG.favicon" :src="get_file(CONFIG.favicon).href" :alt="CONFIG.title">
-                {{ CONFIG.title }}
+                <img v-if="CONFIG.favicon" :src="get_file(CONFIG.favicon).href" :alt="CONFIG.title"
+                    @error="e => (e.target as HTMLImageElement).hidden = true"
+                >{{ CONFIG.title }}
             </RouterLink>
             <nav>
                 <router-link to="/">首页</router-link>
