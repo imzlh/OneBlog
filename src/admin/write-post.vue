@@ -415,7 +415,7 @@
 
             > .md-info{
                 width: 40%;
-                min-width: 28rem;
+                min-width: 25rem;
                 background-color: #f5f5f5;
             }
 
