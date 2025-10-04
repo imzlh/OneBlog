@@ -1,4 +1,4 @@
-import { computed, nextTick, type ComputedRef, type Directive } from "vue";
+import { computed, type ComputedRef, type Directive } from "vue";
 
 export function debounceComputed<T>(func: () => T, wait = 1000): ComputedRef<T> {
     let lastCacheTime = Date.now();
