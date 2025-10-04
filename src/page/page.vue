@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import { ref, watch } from 'vue';
+    import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import { get_file } from '../main';
     import { config } from '../../package.json';
@@ -22,10 +22,21 @@
         else
             $content.value = content;
     }, { immediate: true });
+
+    const page = shallowRef<HTMLDivElement>();
+    onMounted(() => {
+        // @ts-ignore
+        globalThis.pdocument = page.value?.shadowRoot;
+    })
+
+    onUnmounted(() => {
+        // @ts-ignore
+        delete globalThis.pdocument;
+    })
 </script>
 
 <template>
-    <div class="page-content" v-render="$content" />
+    <div class="page-content" ref="page" v-render="$content" />
 </template>
 
 <style lang="scss">
